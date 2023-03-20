@@ -1,15 +1,10 @@
-#!/usr/bin/env python3
-"""
-Python OpenGL practical application.
-"""
-
 import sys                          # for system arguments
 
 # External, non built-in modules
 import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import numpy as np                  # all matrix manipulations & OpenGL args
-import glfw                         # lean window system wrapper for OpenGL
-from core import Shader, Viewer
+from core import *
+
 
 # -------------- main program and scene setup --------------------------------
 def main():
@@ -17,9 +12,18 @@ def main():
     viewer = Viewer()
     
     # load shaders
+    shader = Shader('./shaders/color.vert','./shaders/color.frag')
+    # shader = Shader('./shaders/texture.vert','./shaders/texture.frag')
+    # shader = Shader('./shaders/phong.vert','./shaders/phong.frag')
 
-    # create a scene
 
+    # Add scene objects
+    # viewer.add(randomTerrain(shader, 100, 100))
+    # viewer.add(circularTerrain(shader))
+    # viewer.add(heightMapTerrain(shader, './ress/heightmap.png'))
+    viewer.add(Cube(shader))
+
+    # viewer.add(Pyramid(shader))
     # start rendering loop
     viewer.run()
 
