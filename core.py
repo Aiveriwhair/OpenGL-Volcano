@@ -13,7 +13,7 @@ import assimpcy                     # 3D resource loader
 
 # our transform functions
 from transform import Trackball, identity
-from transform import translate, rotate, scale, vec, perspective
+from transform import translate, rotate, scale, vec, perspective, calculate_normal
 from PIL import Image
 
 # initialize and automatically terminate glfw on exit
@@ -356,7 +356,7 @@ class Viewer(Node):
 
         # initialize GL by setting viewport and default render characteristics
         GL.glClearColor(0.1, 0.1, 0.1, 0.1)
-        # GL.glEnable(GL.GL_CULL_FACE)   
+        GL.glEnable(GL.GL_CULL_FACE)   
         GL.glEnable(GL.GL_DEPTH_TEST)
 
         # cyclic iterator to easily toggle polygon rendering modes
@@ -703,28 +703,53 @@ class heightMapTerrain(Mesh):
     
 
 class Cube(Mesh):
-    def __init__(self, shader):
+    def __init__(self, shader, **params):
         self.shader = shader
-        position = np.array(((0,0,0), (1,0,0), (1,1,0), (0,1,0), (0,0,1), (1,0,1), (1,1,1), (0,1,1)),np.float32)
-        color = np.array(((1,1,1), (1,1,0), (1,0,1), (0,1,1), (0,0,1), (0,1,0), (1,0,0), (0,0,0)),'f')
+        position = np.array((
+                            (-1,-1,-1),
+                            (1,-1,-1),
+                            (1,1,-1),
+                            (-1,1,-1),
+                            (-1,-1,1),
+                            (1,-1,1),
+                            (1,1,1),
+                            (-1,1,1)
+                             ),np.float32)
         index = np.array((
-                            0, 1, 2,
-                            2, 3, 0,
-                            4, 5, 6,
-                            6, 7, 4,
-                            0, 3, 7,
-                            7, 4, 0,
-                            1, 2, 6,
-                            6, 5, 1,
-                            3, 2, 6,
-                            6, 7, 3,
-                            0, 1, 5,
-                            5, 4, 0), np.uint32)
+                            0, 1, 3, 3, 1, 2,
+                            1, 5, 2, 2, 5, 6,
+                            5, 4, 6, 6, 4, 7,
+                            4, 0, 7, 7, 0, 3,
+                            3, 2, 7, 7, 2, 6,
+                            4, 5, 0, 0, 5, 1
+                        ), np.uint32)
         
-        self.color = (0, 0, 0)
-
-        attributes = dict(position=position, color=color)
-        super().__init__(shader, attributes=attributes, index=index)
+    
+        # generate normals for every faces
+        normals = np.array((
+                            (0, 0, 1),
+                            (0, 0, 1),
+                            (1, 0, 0),
+                            (1, 0, 0),
+                            (0, 0, -1),
+                            (0, 0, -1),
+                            (-1, 0, 0),
+                            (-1, 0, 0),
+                            (0, 1, 0),
+                            (0, 1, 0),
+                            (0, -1, 0),
+                            (0, -1, 0),
+                        ), np.float32)
+        
+        self.color = (1, 1, 1)
+        uniforms = dict(
+            k_d=(0., .5, .5),
+            k_s=(0.5673, 0.5673, 0.5673),
+            k_a=(0. , 0.4, 0.4),
+            s=60,
+        )
+        attributes = dict(position=position, normals=normals, color=normals)
+        super().__init__(shader, attributes=attributes, index=index, **{**uniforms, **params})
 
     def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
         super().draw(primitives=primitives, global_color=self.color, **uniforms)
@@ -767,3 +792,5 @@ class Tree(Node):
 #
 #    transform_base = Node(transform=rotate((0.,0.,0.), theta))
 #    transform_base.add(base_shape, transform_arm)
+
+

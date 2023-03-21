@@ -172,6 +172,10 @@ def quaternion_slerp(q0, q1, fraction):
 
     return q0*math.cos(theta) + q2*math.sin(theta)
 
+def calculate_normal(v1, v2, v3):
+    """ Calculate normal of triangle defined by 3 vertices """
+    return normalized(np.cross(v1-v2, v1-v3))
+
 
 # a trackball class based on provided quaternion functions -------------------
 class Trackball:
@@ -220,3 +224,4 @@ class Trackball:
         old, new = (normalized(self._project3d(pos)) for pos in (old, new))
         phi = 2 * math.acos(np.clip(np.dot(old, new), -1, 1))
         return quaternion_from_axis_angle(np.cross(old, new), radians=phi)
+
