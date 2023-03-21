@@ -16,11 +16,11 @@ def main():
     # shader = Shader('./shaders/color.vert','./shaders/color.frag')
     # shader = Shader('./shaders/texture.vert','./shaders/texture.frag')
 
-    viewer.add(Cube(shader, light_dir=(0, -1, 0)))
+    viewer.add(Cube(shader, light_dir=(0.2, -1, 0.2)))
 
     # Add scene objects
     # viewer.add(randomTerrain(shader, 100, 100))
-    # viewer.add(circularTerrain(shader))
+    #viewer.add(circularTerrain(shader))
     # viewer.add(heightMapTerrain(shader, './ress/heightmap.png'))
 
     # viewer.add(Pyramid(shader))
