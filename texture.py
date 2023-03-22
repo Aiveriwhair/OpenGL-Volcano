@@ -2,7 +2,6 @@ import OpenGL.GL as GL              # standard Python OpenGL wrapper
 from PIL import Image               # load texture maps
 import glfw
 from itertools import cycle
-from core import Shader, Viewer, Mesh, load
 import numpy as np                  # all matrix manipulations & OpenGL args
 
 # -------------- OpenGL Texture Wrapper ---------------------------------------
@@ -41,7 +40,6 @@ class Texture:
 # -------------- Textured mesh decorator --------------------------------------
 class Textured:
     """ Drawable mesh decorator that activates and binds OpenGL textures """
-
     def __init__(self, drawable, **textures):
         self.drawable = drawable
         self.textures = textures
@@ -49,32 +47,11 @@ class Textured:
     def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
         for index, (name, texture) in enumerate(self.textures.items()):
             GL.glActiveTexture(GL.GL_TEXTURE0 + index)
-            GL.glBindTexture(texture.type, texture.glid)
+            if(isinstance(texture, np.uint32)): #for self generated texture from FBOS
+                GL.glBindTexture(GL.GL_TEXTURE_2D, texture)
+            else:
+                GL.glBindTexture(texture.type, texture.glid)
             uniforms[name] = index
         self.drawable.draw(primitives=primitives, **uniforms)
 
-# -------------- Example textured plane class ---------------------------------
 
-
-class TexturedPlane(Textured):
-    """ Simple first textured object """
-
-    def __init__(self, shader, tex_file):
-        # prepare texture modes cycling variables for interactive toggling
-        self.wraps = cycle([GL.GL_REPEAT, GL.GL_MIRRORED_REPEAT,
-                            GL.GL_CLAMP_TO_BORDER, GL.GL_CLAMP_TO_EDGE])
-        self.filters = cycle([(GL.GL_NEAREST, GL.GL_NEAREST),
-                              (GL.GL_LINEAR, GL.GL_LINEAR),
-                              (GL.GL_LINEAR, GL.GL_LINEAR_MIPMAP_LINEAR)])
-        self.wrap, self.filter = next(self.wraps), next(self.filters)
-        self.file = tex_file
-
-        # setup plane mesh to be textured
-        base_coords = ((-1, -1, 0), (1, -1, 0), (1, 1, 0), (-1, 1, 0))
-        scaled = 100 * np.array(base_coords, np.float32)
-        indices = np.array((0, 1, 2, 0, 2, 3), np.uint32)
-        mesh = Mesh(shader, attributes=dict(position=scaled), index=indices)
-
-        # setup & upload texture to GPU, bind it to shader name 'diffuse_map'
-        texture = Texture(tex_file, self.wrap, *self.filter)
-        super().__init__(mesh, diffuse_map=texture)
