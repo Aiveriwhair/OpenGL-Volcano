@@ -19,4 +19,7 @@ void main() {
     // fragment normal in world coordinates
     mat3 nit_matrix = transpose(inverse(mat3(model)));
     w_normal = normalize(nit_matrix * normal);
+
+    // compute distance to observer
+    vec4 eye_position = view * model * vec4(position, 1.0);
 }
