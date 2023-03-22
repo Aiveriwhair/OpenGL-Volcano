@@ -13,7 +13,7 @@ import assimpcy                     # 3D resource loader
 
 # our transform functions
 from transform import Trackball, identity
-from transform import translate, rotate, scale, vec, perspective, calculate_normal
+from transform import translate, rotate, scale, vec, perspective, calculate_normals
 from PIL import Image
 
 # initialize and automatically terminate glfw on exit
@@ -356,7 +356,7 @@ class Viewer(Node):
 
         # initialize GL by setting viewport and default render characteristics
         GL.glClearColor(0.1, 0.1, 0.1, 0.1)
-        GL.glEnable(GL.GL_CULL_FACE)   
+        GL.glEnable(GL.GL_CULL_FACE)
         GL.glEnable(GL.GL_DEPTH_TEST)
 
         # cyclic iterator to easily toggle polygon rendering modes
@@ -646,15 +646,22 @@ class circularTerrain(Mesh):
         return (dict(position=position, color=color), indices)
     
 class heightMapTerrain(Mesh):
-    def __init__(self, shader, heightmappath, height_factor=1):
+    def __init__(self, shader, heightmappath, height_factor=1, **params):
         self.shader = shader
         self.height_factor = height_factor
         self.heightmappath = heightmappath
+
         (attributes, index) = self.generateTerrain()
 
-        self.color=(1, 0, 1)
+        self.color = (1, 1, 1)
+        uniforms = dict(
+            k_d=np.array((0., .5, .5), dtype=np.float32),
+            k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
+            k_a=np.array((0. , 0.4, 0.4), dtype=np.float32),
+            s=60,
+        )
 
-        super().__init__(shader, attributes=attributes, index=index)
+        super().__init__(shader, attributes=attributes, index=index, **{**uniforms, **params})
 
     def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
         super().draw(primitives=primitives, global_color=self.color, **uniforms)
@@ -698,8 +705,8 @@ class heightMapTerrain(Mesh):
                 indices[idx + 4] = i + w + 1
                 indices[idx + 5] = i + w
                 idx += 6
-
-        return (dict(position=position, color=color), indices)
+        
+        return (dict(position=position, normal=calculate_normals(position, indices), color=color), indices)
     
 
 class Cube(Mesh):
@@ -707,48 +714,49 @@ class Cube(Mesh):
         self.shader = shader
         position = np.array((
                             (-1,-1,-1),
-                            (1,-1,-1),
-                            (1,1,-1),
-                            (-1,1,-1),
-                            (-1,-1,1),
-                            (1,-1,1),
-                            (1,1,1),
-                            (-1,1,1)
+                            ( 1,-1,-1),
+                            ( 1, 1,-1),
+                            (-1, 1,-1),
+                            (-1,-1, 1),
+                            ( 1,-1, 1),
+                            ( 1, 1, 1),
+                            (-1, 1, 1)
                              ),np.float32)
         index = np.array((
-                            0, 1, 3, 3, 1, 2,
-                            1, 5, 2, 2, 5, 6,
-                            5, 4, 6, 6, 4, 7,
-                            4, 0, 7, 7, 0, 3,
-                            3, 2, 7, 7, 2, 6,
-                            4, 5, 0, 0, 5, 1
+                            3,1,0,2,1,3,
+                            2,5,1,6,5,2,
+                            6,4,5,7,4,6,
+                            7,0,4,3,0,7,
+                            7,2,3,6,2,7,
+                            0,5,4,1,5,0,
                         ), np.uint32)
         
     
-        # generate normals for every faces
+
         normals = np.array((
-                            (0, 0, 1),
-                            (0, 0, 1),
+                            ( 0, 0,1),
+                            ( 0, 0,1),
                             (1, 0, 0),
                             (1, 0, 0),
-                            (0, 0, -1),
-                            (0, 0, -1),
-                            (-1, 0, 0),
-                            (-1, 0, 0),
-                            (0, 1, 0),
-                            (0, 1, 0),
-                            (0, -1, 0),
-                            (0, -1, 0),
+                            ( 0, 0, -1),
+                            ( 0, 0, -1),
+                            ( -1, 0, 0),
+                            ( -1, 0, 0),
+                            ( 0,1, 0),
+                            ( 0,1, 0),
+                            ( 0, -1, 0),
+                            ( 0, -1, 0),
                         ), np.float32)
+        
         
         self.color = (1, 1, 1)
         uniforms = dict(
-            k_d=(0., .5, .5),
-            k_s=(0.5673, 0.5673, 0.5673),
-            k_a=(0. , 0.4, 0.4),
+            k_d=np.array((0., .5, .5), dtype=np.float32),
+            k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
+            k_a=np.array((0. , 0.4, 0.4), dtype=np.float32),
             s=60,
         )
-        attributes = dict(position=position, normals=normals, color=normals)
+        attributes = dict(position=position, normal=normals)
         super().__init__(shader, attributes=attributes, index=index, **{**uniforms, **params})
 
     def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):

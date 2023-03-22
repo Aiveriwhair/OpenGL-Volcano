@@ -29,6 +29,8 @@ def lerp(point_a, point_b, fraction):
     return point_a + fraction * (point_b - point_a)
 
 
+
+
 # Typical 4x4 matrix utilities for OpenGL ------------------------------------
 def identity():
     """ 4x4 identity matrix """
@@ -172,10 +174,6 @@ def quaternion_slerp(q0, q1, fraction):
 
     return q0*math.cos(theta) + q2*math.sin(theta)
 
-def calculate_normal(v1, v2, v3):
-    """ Calculate normal of triangle defined by 3 vertices """
-    return normalized(np.cross(v1-v2, v1-v3))
-
 
 # a trackball class based on provided quaternion functions -------------------
 class Trackball:
@@ -225,3 +223,26 @@ class Trackball:
         phi = 2 * math.acos(np.clip(np.dot(old, new), -1, 1))
         return quaternion_from_axis_angle(np.cross(old, new), radians=phi)
 
+
+def calculate_normals(vertices, indices):
+    # Create an array to store the normal vectors for each vertex
+    normals = np.zeros(vertices.shape, dtype=vertices.dtype)
+
+    # Calculate the normal vectors for each face and add them to the corresponding vertices
+    for i in range(0, indices.shape[0], 3):
+        v1 = vertices[indices[i]]
+        v2 = vertices[indices[i+1]]
+        v3 = vertices[indices[i+2]]
+
+        # Calculate the normal vector for this face using the cross product
+        normal = np.cross(v2 - v1, v3 - v1)
+
+        # Add the normal vector to the corresponding vertices
+        normals[indices[i]] += normal
+        normals[indices[i+1]] += normal
+        normals[indices[i+2]] += normal
+
+    # Normalize the normal vectors for each vertex
+    normals = np.divide(normals, np.linalg.norm(normals, axis=1, keepdims=True))
+
+    return normals

@@ -13,17 +13,14 @@ def main():
     
     # load shaders
     shader = Shader('./shaders/phong.vert','./shaders/phong.frag')
-    # shader = Shader('./shaders/color.vert','./shaders/color.frag')
-    # shader = Shader('./shaders/texture.vert','./shaders/texture.frag')
 
-    viewer.add(Cube(shader, light_dir=(0, -1, 0)))
 
     # Add scene objects
     # viewer.add(randomTerrain(shader, 100, 100))
     # viewer.add(circularTerrain(shader))
-    # viewer.add(heightMapTerrain(shader, './ress/heightmap.png'))
+    viewer.add(heightMapTerrain(shader, './ress/heightmap.png'))
+    # viewer.add(Cube(shader, light_dir=(0, -1, 0), K_d=(.6,.7,.8), s=10))
 
-    # viewer.add(Pyramid(shader))
     # start rendering loop
     viewer.run()
 
