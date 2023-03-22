@@ -53,6 +53,23 @@ class Textured:
             uniforms[name] = index
         self.drawable.draw(primitives=primitives, **uniforms)
 
+
+class TexturedSky:
+    """ Drawable mesh decorator that activates and binds OpenGL textures """
+
+    def __init__(self, drawable, **textures):
+        self.drawable = drawable
+        self.textures = textures
+
+    def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
+        GL.glDepthFunc(GL.GL_LEQUAL)
+        for index, (name, texture) in enumerate(self.textures.items()):
+            GL.glActiveTexture(GL.GL_TEXTURE0 + index)
+            GL.glBindTexture(texture.type, texture.glid)
+            uniforms[name] = index
+        self.drawable.draw(primitives=primitives, **uniforms)
+        GL.glDepthFunc(GL.GL_LESS)
+
 # -------------- Example textured plane class ---------------------------------
 
 
