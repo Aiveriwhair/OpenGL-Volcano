@@ -698,12 +698,12 @@ class heightMapTerrain(Mesh):
         for y in range(h - 1):
             for x in range(w - 1):
                 i = y * w + x
-                indices[idx] = i
+                indices[idx + 2] = i
                 indices[idx + 1] = i + 1
-                indices[idx + 2] = i + w
-                indices[idx + 3] = i + 1
+                indices[idx] = i + w
+                indices[idx + 5] = i + 1
                 indices[idx + 4] = i + w + 1
-                indices[idx + 5] = i + w
+                indices[idx + 3] = i + w
                 idx += 6
         
         return (dict(position=position, normal=calculate_normals(position, indices), color=color), indices)

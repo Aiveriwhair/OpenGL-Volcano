@@ -29,7 +29,7 @@ void main() {
 
     vec3 diffuse_color = k_d * max(dot(n, l), 0);
     vec3 specular_color = k_s * pow(max(dot(r, v), 0), s);
-    float fog_density = 0.07;
+    float fog_density = 0.0001;
     // Compute fog factor
     float fog_factor = exp(-fog_density * dist );
     vec3 fog_color = vec3(0, 0, 0);
