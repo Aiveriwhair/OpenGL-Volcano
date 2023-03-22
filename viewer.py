@@ -18,7 +18,7 @@ def main():
     # Add scene objects
     # viewer.add(randomTerrain(shader, 100, 100))
     # viewer.add(circularTerrain(shader))
-    viewer.add(heightMapTerrain(shader, './ress/heightmap.png'))
+    viewer.add(heightMapTerrain(shader, './ress/heightmap.png', light_dir=(0, -1, 4), K_d=(.6,.7,.8), s=10))
     # viewer.add(Cube(shader, light_dir=(0, -1, 0), K_d=(.6,.7,.8), s=10))
 
     # start rendering loop
