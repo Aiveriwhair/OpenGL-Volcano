@@ -8,21 +8,6 @@ from core import *
 
 # -------------- main program and scene setup --------------------------------
 def main():
-    """ create a window, add scene objects, then run rendering loop """
-    viewer = Viewer()
-    
-    # load shaders
-    shader = Shader('./shaders/phong.vert','./shaders/phong.frag')
-
-
-    # Add scene objects
-    # viewer.add(randomTerrain(shader, 100, 100))
-    # viewer.add(circularTerrain(shader))
-    viewer.add(heightMapTerrain(shader, './ress/heightmap.png', light_dir=(0, -1, 4), K_d=(.6,.7,.8), s=10))
-    # viewer.add(Cube(shader, light_dir=(0, -1, 0), K_d=(.6,.7,.8), s=10))
-
-    # start rendering loop
-    viewer.run()
 
 
 if __name__ == '__main__':
