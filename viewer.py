@@ -21,12 +21,14 @@ def main():
     shaderTree = Shader('./shaders/tree.vert', './shaders/tree.frag')
     skyboxShader = Shader('./shaders/skybox.vert', './shaders/skybox.frag')
 
-    # forest = forestGenerator(shader, 15)
-    # for i in range(len(forest)):
-    #     viewer.add(forest[i])
+    forest = forestGenerator(shaderTree, 15, light_dir=(
+        1, 0, 0))
+    for i in range(len(forest)):
+        viewer.add(forest[i])
 
-    tree = treeGenerator(shaderTree, 0, light_dir=(1, 0, 0))
-    viewer.add(tree)
+    tree = treeGenerator(shaderTree, 0, light_dir=(1, 0, 0), red_tint_factor=round(random.uniform(0, 0.2), 1)
+                         )
+    # viewer.add(tree)
 
     # viewer.add(heightMapTerrain(shader, './ress/heightmap.png', light_dir=(1, 0, 0)))
     viewer.add(SkyBoxTexture(skyboxShader, np.array(['./ress/skybox/xpos.png', './ress/skybox/xneg.png',
