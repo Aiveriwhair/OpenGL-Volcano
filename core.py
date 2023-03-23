@@ -677,7 +677,7 @@ class heightMapTerrain(Mesh):
     def generateTerrain(self):
         map = Image.open(self.heightmappath).convert('L')
         w, h = map.size
-
+        iters = 0
         height_factor = self.height_factor
 
         # Compute the number of vertices and indices needed
@@ -692,6 +692,7 @@ class heightMapTerrain(Mesh):
         # Fill in the vertex positions
         for y in range(h):
             for x in range(w):
+                iters += 1
                 i = y * w + x
                 z = map.getpixel((x, y))
                 position[i, 0] = x
@@ -704,6 +705,7 @@ class heightMapTerrain(Mesh):
         idx = 0
         for y in range(h - 1):
             for x in range(w - 1):
+                iters += 1
                 i = y * w + x
                 indices[idx + 2] = i
                 indices[idx + 1] = i + 1
@@ -713,7 +715,9 @@ class heightMapTerrain(Mesh):
                 indices[idx + 3] = i + w
                 idx += 6
 
-        return (dict(position=position, normal=calculate_normals(position, indices), color=color), indices)
+        print(iters)
+
+        return (dict(position=position, normal=calculate_normals(map.width, map.height, position), color=color), indices)
 
 
 class Cube(Mesh):
