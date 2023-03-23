@@ -30,7 +30,8 @@ def main():
                          )
     # viewer.add(tree)
 
-    # viewer.add(heightMapTerrain(shader, './ress/heightmap.png', light_dir=(1, 0, 0)))
+    viewer.add(heightMapTerrain(
+        shader, './ress/heightmap.png', light_dir=(1, 0, 0)))
     viewer.add(SkyBoxTexture(skyboxShader, np.array(['./ress/skybox/xpos.png', './ress/skybox/xneg.png',
                './ress/skybox/ypos.png', './ress/skybox/yneg.png', './ress/skybox/zpos.png', './ress/skybox/zneg.png'])))
 
