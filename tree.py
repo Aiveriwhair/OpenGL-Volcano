@@ -14,11 +14,12 @@ from tree import *
 class Cone(Mesh):
     """ A class for cones """
 
-    def __init__(self, shader, height=1.0, radius=1.0, divisions=32):
+    def __init__(self, shader, height=1.0, radius=1.0, divisions=32, **params):
         self.shader = shader
         self.height = height
         self.radius = radius
         self.divisions = divisions
+        self.color = (1, 1, 1)
 
         # Vertices
         vertices = [(0, self.height, 0)]
@@ -33,26 +34,37 @@ class Cone(Mesh):
         # Indices
         indices = []
         for i in range(1, self.divisions):
-            indices.extend([0, i, i + 1])
-        indices.extend([0, self.divisions, 1])
+            indices.extend([0, i + 1, i])
+        indices.extend([0, 1, self.divisions + 1])
 
-        for i in range(1, self.divisions):
-            indices.extend([self.divisions + 1, i + 1, i])
-        indices.extend([self.divisions + 1, 1, self.divisions])
+        for i in range(1, self.divisions+1):
+            indices.extend([self.divisions + 1, i, i + 1])
+        indices.extend([self.divisions + 1, self.divisions, 1])
+        indices.extend([0, 1, self.divisions])
 
         index = np.array(indices, np.uint32)
 
-        # Colors
-        colors = [(152/255, 97/255, 9/255) for _ in vertices]
-        color = np.array(colors, 'f')
+        uniforms = dict(
+            k_d=np.array((0., .5, .5), dtype=np.float32),
+            k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
+            k_a=np.array((0., 0.4, 0.4), dtype=np.float32),
+            s=60,
+        )
 
-        super().__init__(shader, attributes=dict(position=position, color=color), index=index)
+        normals = calculate_normals(position, index)
+
+        super().__init__(shader, attributes=dict(position=position,
+                                                 normal=normals), index=index, **{**uniforms, **params})
+
+    def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
+        super().draw(primitives=primitives,
+                     global_color=self.color, **uniforms)
 
 
 class Dodecahedron(Mesh):
     """ A class for dodecahedrons """
 
-    def __init__(self, shader, radius=1.0):
+    def __init__(self, shader, radius=1.0, **params):
         self.shader = shader
         self.radius = radius
 
@@ -75,25 +87,29 @@ class Dodecahedron(Mesh):
         ]
 
         index = np.array(indices, np.uint32)
+        normals = calculate_normals(position, index)
+        uniforms = dict(
+            k_d=np.array((0., .5, .5), dtype=np.float32),
+            k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
+            k_a=np.array((0., 0.4, 0.4), dtype=np.float32),
+            s=60,
+        )
 
-        # Colors
-        colors = [(9/255, 152/255, 69/255) for _ in vertices]
-        color = np.array(colors, 'f')
-
-        super().__init__(shader, attributes=dict(position=position, color=color), index=index)
+        super().__init__(shader, attributes=dict(position=position,
+                                                 normal=normals), index=index, **{**uniforms, **params})
 
 
-def treeGenerator(shader, pos):
+def treeGenerator(shader, pos, **params):
     """ create a tree trunk """
-    mainTrunk = Cone(shader, height=10.0, radius=1.0, divisions=32)
-    firstBranch = Cone(shader, height=4.0, radius=0.5, divisions=32)
-    secondBranch = Cone(shader, height=5.0, radius=0.5, divisions=32)
-    thirdBranch = Cone(shader, height=2.0, radius=0.3, divisions=32)
+    mainTrunk = Cone(shader, height=10.0, radius=1.0, divisions=32, **params)
+    firstBranch = Cone(shader, height=4.0, radius=0.5, divisions=32, **params)
+    secondBranch = Cone(shader, height=5.0, radius=0.5, divisions=32, **params)
+    thirdBranch = Cone(shader, height=2.0, radius=0.3, divisions=32, **params)
 
     axis = Axis(shader)
 
     phi = 60.0
-    random_size = np.random.uniform(1, 3)
+    random_size = np.random.uniform(1.5, 3)
 
     mainLeaf = Dodecahedron(shader)
     leaf1 = Dodecahedron(shader)
