@@ -4,6 +4,7 @@ import sys                          # for system arguments
 import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import numpy as np                  # all matrix manipulations & OpenGL args
 from core import *
+from water import FftWater
 
 
 # -------------- main program and scene setup --------------------------------
@@ -15,11 +16,11 @@ def main():
     shader = Shader('./shaders/phong.vert','./shaders/phong.frag')
 
 
-    # Add scene objects
-    # viewer.add(randomTerrain(shader, 100, 100))
-    # viewer.add(circularTerrain(shader))
-    viewer.add(heightMapTerrain(shader, './ress/heightmap.png', light_dir=(0, -1, 4), K_d=(.6,.7,.8), s=10))
-    # viewer.add(Cube(shader, light_dir=(0, -1, 0), K_d=(.6,.7,.8), s=10))
+    # # Add scene objects
+    
+    # viewer.add(heightMapTerrain(shader, './ress/heightmap.png', light_dir=(0, -1, 4)))
+    viewer.add(WaterTerrain(shader, light_dir=(0, -1, 0.7)))
+
 
     # start rendering loop
     viewer.run()

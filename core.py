@@ -16,6 +16,8 @@ from transform import Trackball, identity
 from transform import translate, rotate, scale, vec, perspective, calculate_normals
 from PIL import Image
 
+from water import FftWater
+
 # initialize and automatically terminate glfw on exit
 glfw.init()
 atexit.register(glfw.terminate)
@@ -645,7 +647,7 @@ class circularTerrain(Mesh):
 
         return (dict(position=position, color=color), indices)
     
-class heightMapTerrain(Mesh):
+class heightMapTerrainImg(Mesh):
     def __init__(self, shader, heightmappath, height_factor=1, **params):
         self.shader = shader
         self.height_factor = height_factor
@@ -708,6 +710,151 @@ class heightMapTerrain(Mesh):
         
         return (dict(position=position, normal=calculate_normals(position, indices), color=color), indices)
     
+class heightMapTerrain(Mesh):
+    def __init__(self, shader, heightmap, height_factor=1, **params):
+        self.shader = shader
+        self.height_factor = height_factor
+        self.heightmap = heightmap
+
+        (attributes, index) = self.generateTerrain()
+
+        self.color = (1, 1, 1)
+        uniforms = dict(
+            k_d=np.array((0., .5, .5), dtype=np.float32),
+            k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
+            k_a=np.array((0. , 0.4, 0.4), dtype=np.float32),
+            s=60,
+        )
+
+        super().__init__(shader, attributes=attributes, index=index, **{**uniforms, **params})
+
+    def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
+        super().draw(primitives=primitives, global_color=self.color, **uniforms)
+
+
+    def generateTerrain(self):
+        map = self.heightmap
+        w, h = map.shape
+
+        height_factor = self.height_factor
+
+        # Compute the number of vertices and indices needed
+        num_vertices = w * h
+        num_indices = (w - 1) * (h - 1) * 6
+
+        # Create arrays to hold the vertices and indices
+        position = np.zeros((num_vertices, 3), dtype=np.float32)
+        indices = np.zeros(num_indices, dtype=np.uint32)
+        color = np.zeros((num_vertices, 3), dtype=np.float32)
+
+        # Fill in the vertex positions
+        for y in range(h):
+            for x in range(w):
+                i = y * w + x
+                z = map[y, x]
+                position[i, 0] = x
+                position[i, 1] = z * height_factor
+                position[i, 2] = y
+                color[i] = (z/(255*height_factor), z/(255*height_factor), z/(255*height_factor))
+
+
+        # Fill in the indices to draw triangles
+        idx = 0
+        for y in range(h - 1):
+            for x in range(w - 1):
+                i = y * w + x
+                indices[idx + 2] = i
+                indices[idx + 1] = i + 1
+                indices[idx] = i + w
+                indices[idx + 5] = i + 1
+                indices[idx + 4] = i + w + 1
+                indices[idx + 3] = i + w
+                idx += 6
+        
+        return (dict(position=position, normal=calculate_normals(position, indices), color=color), indices)
+    
+
+class WaterTerrain(Mesh):
+    def __init__(self, shader, **params):
+        self.shader = shader
+        self.N = 16
+        self.L = 50
+        self.A = 4
+        self.wind_dir = (1,0,4)
+        
+        self.map = FftWater.generate_heightmap(self.N, self.L, self.A, self.wind_dir)
+        (attributes, index) = self.generateTerrain()
+        self.last_time = glfw.get_time()
+
+        self.color = (1, 1, 1)
+
+        uniforms = dict(
+            # diffuse color
+            k_d=np.array((0.0, 0.5, 0.7), dtype=np.float32),
+            # specular color
+            k_s=np.array((1.0, 1.0, 1.0), dtype=np.float32),
+            # ambient color
+            k_a=np.array((0.0, 0.2, 0.3), dtype=np.float32),
+            # shininess
+            s=10,
+        )
+
+        super().__init__(shader, attributes=attributes, index=index, **{**uniforms, **params})
+
+    def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
+        t = glfw.get_time()
+        dt = t - self.last_time
+        if(dt > 0.1):
+            self.last_time = t
+            self.update(dt/2, dt/2)
+        super().draw(primitives=primitives, **uniforms)
+
+    def generateTerrain(self):
+        map = self.map
+        w, h = map.shape
+
+        # Compute the number of vertices and indices needed
+        num_vertices = w * h
+        num_indices = (w - 1) * (h - 1) * 6
+
+        # Create arrays to hold the vertices and indices
+        position = np.zeros((num_vertices, 3), dtype=np.float32)
+        indices = np.zeros(num_indices, dtype=np.uint32)
+        color = np.zeros((num_vertices, 3), dtype=np.float32)
+
+        # Fill in the vertex positions
+        for y in range(h):
+            for x in range(w):
+                i = y * w + x
+                z = map[y, x]
+                position[i, 0] = x
+                position[i, 1] = z 
+                position[i, 2] = y
+                color[i] = (z/(255), z/(255), z/(255))
+
+
+        # Fill in the indices to draw triangles
+        idx = 0
+        for y in range(h - 1):
+            for x in range(w - 1):
+                i = y * w + x
+                indices[idx + 2] = i
+                indices[idx + 1] = i + 1
+                indices[idx] = i + w
+                indices[idx + 5] = i + 1
+                indices[idx + 4] = i + w + 1
+                indices[idx + 3] = i + w
+                idx += 6
+        
+        return (dict(position=position, normal=calculate_normals(position, indices), color=color), indices)
+    
+    def update(self, tX, tY):
+        self.map = FftWater.generate_heightmap(self.N, self.L, self.A, self.wind_dir, tX, tY)
+        (attributes, index) = self.generateTerrain()
+        self.attributes = attributes
+        self.index = index
+        self.vertex_array = VertexArray(shader=self.shader, attributes=attributes, index=index, usage=GL.GL_STATIC_DRAW)
+
 
 class Cube(Mesh):
     def __init__(self, shader, **params):
@@ -762,22 +909,21 @@ class Cube(Mesh):
     def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
         super().draw(primitives=primitives, global_color=self.color, **uniforms)
 
+# class Tree(Node):
+#     def __init__(self, shader):
+#         self.shader = shader
+#         (attributes, index) = self.generateTree()
+#         self.color=(1, 0, 1)
+#         super().__init__(shader, attributes=attributes, index=index)
 
-class Tree(Node):
-    def __init__(self, shader):
-        self.shader = shader
-        (attributes, index) = self.generateTree()
-        self.color=(1, 0, 1)
-        super().__init__(shader, attributes=attributes, index=index)
-
-    def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
-        super().draw(primitives=primitives, global_color=self.color, **uniforms)
+#     def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
+#         super().draw(primitives=primitives, global_color=self.color, **uniforms)
 
 
-    def generateTree(self, recursion=3, NodeTree=None):
-        if(NodeTree == None):
-            NodeTree = Node()
-            NodeTree.generateTree(recursion)
+#     def generateTree(self, recursion=3, NodeTree=None):
+#         if(NodeTree == None):
+#             NodeTree = Node()
+#             NodeTree.generateTree(recursion)
 
 ## ---- let's make our shapes ---------------------------------------
 #    base_shape = Cylinder(shader)
