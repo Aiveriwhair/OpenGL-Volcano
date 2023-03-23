@@ -18,11 +18,17 @@ def main():
     # load shaders
     shader = Shader('./shaders/phong.vert', './shaders/phong.frag')
 
-    # Add scene objects
-    # viewer.add(randomTerrain(shader, 100, 100))
-    # viewer.add(circularTerrain(shader))
-    viewer.add(heightMapTerrain(shader, './ress/heightmap.png'))
-    # viewer.add(Cube(shader, light_dir=(0, -1, 0), K_d=(.6,.7,.8), s=10))
+    shaderTree = Shader('./shaders/tree.vert', './shaders/tree.frag')
+    skyboxShader = Shader('./shaders/skybox.vert', './shaders/skybox.frag')
+
+    forest = forestGenerator(shaderTree, 15)
+    for i in range(len(forest)):
+        viewer.add(forest[i])
+
+    viewer.add(heightMapTerrain(
+        shader, './ress/heightmap.png', light_dir=(1, 0, 0)))
+    viewer.add(SkyBoxTexture(skyboxShader, np.array(['./ress/skybox/xpos.png', './ress/skybox/xneg.png',
+               './ress/skybox/ypos.png', './ress/skybox/yneg.png', './ress/skybox/zpos.png', './ress/skybox/zneg.png'])))
 
     # start rendering loop
     viewer.run()
