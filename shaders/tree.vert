@@ -7,18 +7,21 @@ uniform vec3 global_color;
 in vec3 position;
 in vec3 color;
 in vec3 normal;
+in vec2 texcoord;
 
 // global matrix variables
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-// interpolated color for fragment shader, intialized at vertices
+// interpolated variables for fragment shader
 out vec3 fragment_color;
+out vec2 fragment_texcoord;
 
 void main() {
-    // initialize interpolated colors at vertices
+    // initialize interpolated colors and texture coordinates at vertices
     fragment_color = color + normal + global_color;
+    fragment_texcoord = texcoord;
 
     // tell OpenGL how to transform the vertex to clip coordinates
     gl_Position = projection * view * model * vec4(position, 1);

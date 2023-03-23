@@ -25,10 +25,10 @@ def main():
     # for i in range(len(forest)):
     #     viewer.add(forest[i])
 
-    tree = treeGenerator(shader, 0, light_dir=(1, 0, 0))
+    tree = treeGenerator(shaderTree, 0, light_dir=(1, 0, 0))
     viewer.add(tree)
 
-    # viewer.add(heightMapTerrain(shader, './ress/heightmap.png', light_dir = (1, 0, 0)))
+    # viewer.add(heightMapTerrain(shader, './ress/heightmap.png', light_dir=(1, 0, 0)))
     viewer.add(SkyBoxTexture(skyboxShader, np.array(['./ress/skybox/xpos.png', './ress/skybox/xneg.png',
                './ress/skybox/ypos.png', './ress/skybox/yneg.png', './ress/skybox/zpos.png', './ress/skybox/zneg.png'])))
 
