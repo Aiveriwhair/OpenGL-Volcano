@@ -1,3 +1,6 @@
+from tree import *
+from skybox import *
+from texture import *
 import sys                          # for system arguments
 
 # External, non built-in modules
@@ -6,14 +9,16 @@ import numpy as np                  # all matrix manipulations & OpenGL args
 from core import *
 from water import FftWater
 
-
 # -------------- main program and scene setup --------------------------------
+
+
 def main():
     """ create a window, add scene objects, then run rendering loop """
     viewer = Viewer()
-    
+
     # load shaders
-    shader = Shader('./shaders/phong.vert','./shaders/phong.frag')
+    shader = Shader('./shaders/phong.vert', './shaders/phong.frag')
+    skyboxShader = Shader('./shaders/skybox.vert', './shaders/skybox.frag')
 
 
     # # Add scene objects

@@ -65,7 +65,8 @@ class Shader:
         get_name = {int(k): str(k).split()[0] for k in self.GL_SETTERS.keys()}
         for var in range(GL.glGetProgramiv(self.glid, GL.GL_ACTIVE_UNIFORMS)):
             name, size, type_ = GL.glGetActiveUniform(self.glid, var)
-            name = name.decode().split('[')[0]   # remove array characterization
+            # remove array characterization
+            name = name.decode().split('[')[0]
             args = [GL.glGetUniformLocation(self.glid, name), size]
             # add transpose=True as argument for matrix types
             if type_ in {GL.GL_FLOAT_MAT2, GL.GL_FLOAT_MAT3, GL.GL_FLOAT_MAT4}:
@@ -103,6 +104,7 @@ class Shader:
 
 class VertexArray:
     """ helper class to create and self destroy OpenGL vertex array objects."""
+
     def __init__(self, shader, attributes, index=None, usage=GL.GL_STATIC_DRAW):
         """ Vertex array from attributes and optional index array. Vertex
             Attributes should be list of arrays with one row per vertex. """
@@ -124,7 +126,8 @@ class VertexArray:
                 GL.glEnableVertexAttribArray(loc)
                 GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.buffers[name])
                 GL.glBufferData(GL.GL_ARRAY_BUFFER, data, usage)
-                GL.glVertexAttribPointer(loc, size, GL.GL_FLOAT, False, 0, None)
+                GL.glVertexAttribPointer(
+                    loc, size, GL.GL_FLOAT, False, 0, None)
 
         # optionally create and upload an index buffer for this object
         self.draw_command = GL.glDrawArrays
@@ -154,11 +157,10 @@ class VertexArray:
         GL.glDeleteBuffers(len(self.buffers), list(self.buffers.values()))
 
 
-
-
 # ------------  Node is the core drawable for hierarchical scene graphs -------
 class Node:
     """ Scene graph transform and parameter broadcast node """
+
     def __init__(self, children=(), transform=identity()):
         self.transform = transform
         self.world_transform = identity()
@@ -216,11 +218,12 @@ def load(file, shader, tex_file=None, **params):
         if tex_file:
             tfile = tex_file
         elif 'TEXTURE_BASE' in mat.properties:  # texture token
-            name = mat.properties['TEXTURE_BASE'].split('/')[-1].split('\\')[-1]
+            name = mat.properties['TEXTURE_BASE'].split(
+                '/')[-1].split('\\')[-1]
             # search texture in file's whole subdir since path often screwed up
             paths = os.walk(path, followlinks=True)
             tfile = next((os.path.join(d, f) for d, _, n in paths for f in n
-                     if name.startswith(f) or f.startswith(name)), None)
+                          if name.startswith(f) or f.startswith(name)), None)
             assert tfile, 'Cannot find texture %s in %s subtree' % (name, path)
         else:
             tfile = None
@@ -367,7 +370,7 @@ class Viewer(Node):
     def run(self):
         """ Main render loop for this OpenGL window """
         while not glfw.window_should_close(self.win):
-            
+
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
             win_size = glfw.get_window_size(self.win)
@@ -416,10 +419,10 @@ class Viewer(Node):
         GL.glViewport(0, 0, *glfw.get_framebuffer_size(self.win))
 
 
-
 # ------------  Mesh is the core drawable -------------------------------------
 class Mesh:
     """ Basic mesh class, attributes and uniforms passed as arguments """
+
     def __init__(self, shader, attributes, index=None,
                  usage=GL.GL_STATIC_DRAW, **uniforms):
         self.shader = shader
@@ -448,21 +451,28 @@ class Triangle(Mesh):
         if key == glfw.KEY_C:
             self.color = (0, 0, 0)
 
+
 class Axis(Mesh):
     def __init__(self, shader):
-        pos = ((0, 0, 0), (1, 0, 0), (0, 0, 0), (0, 1, 0), (0, 0, 0), (0, 0, 1))
-        col = ((1, 0, 0), (1, 0, 0), (0, 1, 0), (0, 1, 0), (0, 0, 1), (0, 0, 1))
+        pos = ((0, 0, 0), (1, 0, 0), (0, 0, 0),
+               (0, 1, 0), (0, 0, 0), (0, 0, 1))
+        col = ((1, 0, 0), (1, 0, 0), (0, 1, 0),
+               (0, 1, 0), (0, 0, 1), (0, 0, 1))
         super().__init__(shader, attributes=dict(position=pos, color=col))
 
     def draw(self, primitives=GL.GL_LINES, **uniforms):
         super().draw(primitives=primitives, **uniforms)
 
+
 class Pyramid(Mesh):
     def __init__(self, shader):
-        position = np.array(((-.5, 0, -.5), (.5, 0, -.5), (.5, 0, .5), (-.5, 0, .5),  (0, 1, 0)), np.float32)
-        color = np.array(((1, 1, 1), (1, 1, 1), (1, 1, 1), (1, 1, 1), (0, 0, 0)), 'f')
-        index = np.array((1, 0, 4, 2, 1, 4, 3, 2, 4, 0, 3, 4, 2, 3, 0, 2, 0, 1), np.uint32)
-       
+        position = np.array(((-.5, 0, -.5), (.5, 0, -.5),
+                            (.5, 0, .5), (-.5, 0, .5),  (0, 1, 0)), np.float32)
+        color = np.array(((1, 1, 1), (1, 1, 1), (1, 1, 1),
+                         (1, 1, 1), (0, 0, 0)), 'f')
+        index = np.array((1, 0, 4, 2, 1, 4, 3, 2, 4, 0, 3,
+                         4, 2, 3, 0, 2, 0, 1), np.uint32)
+
         self.color = (1, 0, 0)
         attributes = dict(position=position, color=color)
         super().__init__(shader, attributes=attributes, index=index)
@@ -479,13 +489,12 @@ class Terrain(Mesh):
         self.shader = shader
         (attributes, index) = self.generateTerrain()
 
-        self.color=(1, 0, 1)
+        self.color = (1, 0, 1)
 
         super().__init__(shader, attributes=attributes, index=index)
 
     def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
         super().draw(primitives=primitives, global_color=self.color, **uniforms)
-
 
     def generateTerrain(self):
         w = self.w
@@ -509,7 +518,6 @@ class Terrain(Mesh):
                 position[i, 1] = 0
                 position[i, 2] = y * step
 
-
         # Fill in the indices to draw triangles
         idx = 0
         for y in range(h - 1):
@@ -524,7 +532,7 @@ class Terrain(Mesh):
                 idx += 6
 
         return (dict(position=position, color=color), indices)
-    
+
 
 class randomTerrain(Mesh):
     def __init__(self, shader, height=100, width=100, step=1):
@@ -534,13 +542,12 @@ class randomTerrain(Mesh):
         self.shader = shader
         (attributes, index) = self.generateTerrain()
 
-        self.color=(1, 0, 1)
+        self.color = (1, 0, 1)
 
         super().__init__(shader, attributes=attributes, index=index)
 
     def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
         super().draw(primitives=primitives, global_color=self.color, **uniforms)
-
 
     def generateTerrain(self):
         w = self.w
@@ -566,7 +573,6 @@ class randomTerrain(Mesh):
                 position[i, 2] = y * step
                 color[i] = (z/10, z/10, z/10)
 
-
         # Fill in the indices to draw triangles
         idx = 0
         for y in range(h - 1):
@@ -581,7 +587,8 @@ class randomTerrain(Mesh):
                 idx += 6
 
         return (dict(position=position, color=color), indices)
-    
+
+
 class circularTerrain(Mesh):
     def __init__(self, shader, height=100, width=100, radius=20, step=5):
         self.h = height
@@ -591,13 +598,12 @@ class circularTerrain(Mesh):
         self.shader = shader
         (attributes, index) = self.generateTerrain()
 
-        self.color=(1, 0, 1)
+        self.color = (1, 0, 1)
 
         super().__init__(shader, attributes=attributes, index=index)
 
     def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
         super().draw(primitives=primitives, global_color=self.color, **uniforms)
-
 
     def generateTerrain(self):
         w = self.w
@@ -623,14 +629,13 @@ class circularTerrain(Mesh):
                 # distance from center of the plane
                 dist = math.sqrt((x - w/2)**2 + (y - h/2)**2)
                 z_factor = 1 - (dist/r)
-                if(z_factor < 0):
+                if (z_factor < 0):
                     z_factor = 0
                 z = z * z_factor
                 position[i, 0] = x * step
                 position[i, 1] = z
                 position[i, 2] = y * step
                 color[i] = (z / maxheight, z/maxheight, z/maxheight)
-
 
         # Fill in the indices to draw triangles
         idx = 0
@@ -646,8 +651,9 @@ class circularTerrain(Mesh):
                 idx += 6
 
         return (dict(position=position, color=color), indices)
-    
-class heightMapTerrainImg(Mesh):
+
+
+class heightMapTerrain(Mesh):
     def __init__(self, shader, heightmappath, height_factor=1, **params):
         self.shader = shader
         self.height_factor = height_factor
@@ -659,20 +665,20 @@ class heightMapTerrainImg(Mesh):
         uniforms = dict(
             k_d=np.array((0., .5, .5), dtype=np.float32),
             k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
-            k_a=np.array((0. , 0.4, 0.4), dtype=np.float32),
+            k_a=np.array((0., 0.4, 0.4), dtype=np.float32),
             s=60,
         )
 
-        super().__init__(shader, attributes=attributes, index=index, **{**uniforms, **params})
+        super().__init__(shader, attributes=attributes,
+                         index=index, **{**uniforms, **params})
 
     def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
         super().draw(primitives=primitives, global_color=self.color, **uniforms)
-
 
     def generateTerrain(self):
         map = Image.open(self.heightmappath).convert('L')
-        w,h = map.size
-
+        w, h = map.size
+        iters = 0
         height_factor = self.height_factor
 
         # Compute the number of vertices and indices needed
@@ -687,18 +693,20 @@ class heightMapTerrainImg(Mesh):
         # Fill in the vertex positions
         for y in range(h):
             for x in range(w):
+                iters += 1
                 i = y * w + x
-                z = map.getpixel((x,y))
+                z = map.getpixel((x, y))
                 position[i, 0] = x
                 position[i, 1] = z * height_factor
                 position[i, 2] = y
-                color[i] = (z/(255*height_factor), z/(255*height_factor), z/(255*height_factor))
-
+                color[i] = (z/(255*height_factor), z /
+                            (255*height_factor), z/(255*height_factor))
 
         # Fill in the indices to draw triangles
         idx = 0
         for y in range(h - 1):
             for x in range(w - 1):
+                iters += 1
                 i = y * w + x
                 indices[idx + 2] = i
                 indices[idx + 1] = i + 1
@@ -707,244 +715,59 @@ class heightMapTerrainImg(Mesh):
                 indices[idx + 4] = i + w + 1
                 indices[idx + 3] = i + w
                 idx += 6
-        
-        return (dict(position=position, normal=calculate_normals(position, indices), color=color), indices)
-    
-class heightMapTerrain(Mesh):
-    def __init__(self, shader, heightmap, height_factor=1, **params):
-        self.shader = shader
-        self.height_factor = height_factor
-        self.heightmap = heightmap
 
-        (attributes, index) = self.generateTerrain()
+        print(iters)
 
-        self.color = (1, 1, 1)
-        uniforms = dict(
-            k_d=np.array((0., .5, .5), dtype=np.float32),
-            k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
-            k_a=np.array((0. , 0.4, 0.4), dtype=np.float32),
-            s=60,
-        )
-
-        super().__init__(shader, attributes=attributes, index=index, **{**uniforms, **params})
-
-    def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
-        super().draw(primitives=primitives, global_color=self.color, **uniforms)
-
-
-    def generateTerrain(self):
-        map = self.heightmap
-        w, h = map.shape
-
-        height_factor = self.height_factor
-
-        # Compute the number of vertices and indices needed
-        num_vertices = w * h
-        num_indices = (w - 1) * (h - 1) * 6
-
-        # Create arrays to hold the vertices and indices
-        position = np.zeros((num_vertices, 3), dtype=np.float32)
-        indices = np.zeros(num_indices, dtype=np.uint32)
-        color = np.zeros((num_vertices, 3), dtype=np.float32)
-
-        # Fill in the vertex positions
-        for y in range(h):
-            for x in range(w):
-                i = y * w + x
-                z = map[y, x]
-                position[i, 0] = x
-                position[i, 1] = z * height_factor
-                position[i, 2] = y
-                color[i] = (z/(255*height_factor), z/(255*height_factor), z/(255*height_factor))
-
-
-        # Fill in the indices to draw triangles
-        idx = 0
-        for y in range(h - 1):
-            for x in range(w - 1):
-                i = y * w + x
-                indices[idx + 2] = i
-                indices[idx + 1] = i + 1
-                indices[idx] = i + w
-                indices[idx + 5] = i + 1
-                indices[idx + 4] = i + w + 1
-                indices[idx + 3] = i + w
-                idx += 6
-        
-        return (dict(position=position, normal=calculate_normals(position, indices), color=color), indices)
-    
-
-class WaterTerrain(Mesh):
-    def __init__(self, shader, **params):
-        self.shader = shader
-        self.N = 16
-        self.L = 50
-        self.A = 4
-        self.wind_dir = (1,0,4)
-        
-        self.map = FftWater.generate_heightmap(self.N, self.L, self.A, self.wind_dir)
-        (attributes, index) = self.generateTerrain()
-        self.last_time = glfw.get_time()
-
-        self.color = (1, 1, 1)
-
-        uniforms = dict(
-            # diffuse color
-            k_d=np.array((0.0, 0.5, 0.7), dtype=np.float32),
-            # specular color
-            k_s=np.array((1.0, 1.0, 1.0), dtype=np.float32),
-            # ambient color
-            k_a=np.array((0.0, 0.2, 0.3), dtype=np.float32),
-            # shininess
-            s=10,
-        )
-
-        super().__init__(shader, attributes=attributes, index=index, **{**uniforms, **params})
-
-    def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
-        t = glfw.get_time()
-        dt = t - self.last_time
-        if(dt > 0.1):
-            self.last_time = t
-            self.update(dt/2, dt/2)
-        super().draw(primitives=primitives, **uniforms)
-
-    def generateTerrain(self):
-        map = self.map
-        w, h = map.shape
-
-        # Compute the number of vertices and indices needed
-        num_vertices = w * h
-        num_indices = (w - 1) * (h - 1) * 6
-
-        # Create arrays to hold the vertices and indices
-        position = np.zeros((num_vertices, 3), dtype=np.float32)
-        indices = np.zeros(num_indices, dtype=np.uint32)
-        color = np.zeros((num_vertices, 3), dtype=np.float32)
-
-        # Fill in the vertex positions
-        for y in range(h):
-            for x in range(w):
-                i = y * w + x
-                z = map[y, x]
-                position[i, 0] = x
-                position[i, 1] = z 
-                position[i, 2] = y
-                color[i] = (z/(255), z/(255), z/(255))
-
-
-        # Fill in the indices to draw triangles
-        idx = 0
-        for y in range(h - 1):
-            for x in range(w - 1):
-                i = y * w + x
-                indices[idx + 2] = i
-                indices[idx + 1] = i + 1
-                indices[idx] = i + w
-                indices[idx + 5] = i + 1
-                indices[idx + 4] = i + w + 1
-                indices[idx + 3] = i + w
-                idx += 6
-        
-        return (dict(position=position, normal=calculate_normals(position, indices), color=color), indices)
-    
-    def update(self, tX, tY):
-        self.map = FftWater.generate_heightmap(self.N, self.L, self.A, self.wind_dir, tX, tY)
-        (attributes, index) = self.generateTerrain()
-        self.attributes = attributes
-        self.index = index
-        self.vertex_array = VertexArray(shader=self.shader, attributes=attributes, index=index, usage=GL.GL_STATIC_DRAW)
+        return (dict(position=position, normal=calculate_normals(map.width, map.height, position), color=color), indices)
 
 
 class Cube(Mesh):
     def __init__(self, shader, **params):
         self.shader = shader
         position = np.array((
-                            (-1,-1,-1),
-                            ( 1,-1,-1),
-                            ( 1, 1,-1),
-                            (-1, 1,-1),
-                            (-1,-1, 1),
-                            ( 1,-1, 1),
-                            ( 1, 1, 1),
+                            (-1, -1, -1),
+                            (1, -1, -1),
+                            (1, 1, -1),
+                            (-1, 1, -1),
+                            (-1, -1, 1),
+                            (1, -1, 1),
+                            (1, 1, 1),
                             (-1, 1, 1)
-                             ),np.float32)
+                            ), np.float32)
         index = np.array((
-                            3,1,0,2,1,3,
-                            2,5,1,6,5,2,
-                            6,4,5,7,4,6,
-                            7,0,4,3,0,7,
-                            7,2,3,6,2,7,
-                            0,5,4,1,5,0,
-                        ), np.uint32)
-        
-    
+            3, 1, 0, 2, 1, 3,
+            2, 5, 1, 6, 5, 2,
+            6, 4, 5, 7, 4, 6,
+            7, 0, 4, 3, 0, 7,
+            7, 2, 3, 6, 2, 7,
+            0, 5, 4, 1, 5, 0,
+        ), np.uint32)
 
         normals = np.array((
-                            ( 0, 0,1),
-                            ( 0, 0,1),
-                            (1, 0, 0),
-                            (1, 0, 0),
-                            ( 0, 0, -1),
-                            ( 0, 0, -1),
-                            ( -1, 0, 0),
-                            ( -1, 0, 0),
-                            ( 0,1, 0),
-                            ( 0,1, 0),
-                            ( 0, -1, 0),
-                            ( 0, -1, 0),
-                        ), np.float32)
-        
-        
+            (0, 0, 1),
+            (0, 0, 1),
+            (1, 0, 0),
+            (1, 0, 0),
+            (0, 0, -1),
+            (0, 0, -1),
+            (-1, 0, 0),
+            (-1, 0, 0),
+            (0, 1, 0),
+            (0, 1, 0),
+            (0, -1, 0),
+            (0, -1, 0),
+        ), np.float32)
+
         self.color = (1, 1, 1)
         uniforms = dict(
             k_d=np.array((0., .5, .5), dtype=np.float32),
             k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
-            k_a=np.array((0. , 0.4, 0.4), dtype=np.float32),
+            k_a=np.array((0., 0.4, 0.4), dtype=np.float32),
             s=60,
         )
         attributes = dict(position=position, normal=normals)
-        super().__init__(shader, attributes=attributes, index=index, **{**uniforms, **params})
+        super().__init__(shader, attributes=attributes,
+                         index=index, **{**uniforms, **params})
 
     def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
         super().draw(primitives=primitives, global_color=self.color, **uniforms)
-
-# class Tree(Node):
-#     def __init__(self, shader):
-#         self.shader = shader
-#         (attributes, index) = self.generateTree()
-#         self.color=(1, 0, 1)
-#         super().__init__(shader, attributes=attributes, index=index)
-
-#     def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
-#         super().draw(primitives=primitives, global_color=self.color, **uniforms)
-
-
-#     def generateTree(self, recursion=3, NodeTree=None):
-#         if(NodeTree == None):
-#             NodeTree = Node()
-#             NodeTree.generateTree(recursion)
-
-## ---- let's make our shapes ---------------------------------------
-#    base_shape = Cylinder(shader)
-#    arm_shape = Cylinder(shader)
-#    forearm_shape = Cylinder(shader)
-#
-#    # ---- construct our robot arm hierarchy ---------------------------
-#    theta = 45.0        # base horizontal rotation angle
-#    phi1 = 45.0         # arm angle
-#    phi2 = 20.0         # forearm angle
-#    
-#    axis = Axis(shader)
-#
-#    transform_forearm = Node(transform=translate(0,2,0) @ rotate((0.,0.,1.), phi2) @ scale(0.5,0.5,0.5))
-#    transform_forearm.add(forearm_shape)
-#
-#    transform_arm = Node(transform=rotate((0.,0.,1.), phi1) @translate(1,2,0) @scale(0.4,1,0.4))
-#    transform_arm.add(arm_shape, transform_forearm)
-#    transform_arm.add(axis)
-#
-#    transform_base = Node(transform=rotate((0.,0.,0.), theta))
-#    transform_base.add(base_shape, transform_arm)
-
-
