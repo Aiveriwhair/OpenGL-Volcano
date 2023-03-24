@@ -1,3 +1,4 @@
+from particle import PointAnimation
 from tree import *
 from skybox import *
 from texture import *
@@ -22,6 +23,8 @@ def main():
     viewer.add(heightMapTerrain(shader, './ress/heightmap.png', light_dir=(1, 0, 0)))
     viewer.add(SkyBoxTexture(skyboxShader, np.array(['./ress/skybox/xpos.png', './ress/skybox/xneg.png',
                './ress/skybox/ypos.png', './ress/skybox/yneg.png', './ress/skybox/zpos.png', './ress/skybox/zneg.png'])))
+    shaderparticle = Shader("./shaders/color.vert", "./shaders/color.frag")
+    viewer.add(PointAnimation(shaderparticle, num_particles=1, point_size=10, texture_path='./ress/lava.png'))
 
     # start rendering loop
     viewer.run()
