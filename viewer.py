@@ -23,9 +23,9 @@ def main():
 
     shaderTree = Shader('./shaders/tree.vert', './shaders/tree.frag')
 
-    forest = forestGenerator(shaderTree, 15)
-    for i in range(len(forest)):
-        viewer.add(forest[i])
+    # forest = forestGenerator(shaderTree, 15)
+    # for i in range(len(forest)):
+    #     viewer.add(forest[i])
 
     terrain = heightMapTerrain(
         shaderTree, './ress/hm2.png', light_dir=(1, 0, 0), height_factor=0.3, red_tint_factor=0.)
@@ -33,6 +33,8 @@ def main():
 
     viewer.add(SkyBoxTexture(skyboxShader, np.array(['./ress/skybox/xpos.png', './ress/skybox/xneg.png',
                './ress/skybox/ypos.png', './ress/skybox/yneg.png', './ress/skybox/zpos.png', './ress/skybox/zneg.png'])))
+    viewer.add(PointAnimation(shaderTree, 0, 0, 0, './ress/grass.png', num_particles=1,
+               point_size=200.0, light_dir=(1, 0, 0)))
 
     # start rendering loop
     viewer.run()

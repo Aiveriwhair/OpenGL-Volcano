@@ -26,26 +26,39 @@ from texture import *  # import Pillow for image loading
 
 class PointAnimation(Textured):
     """ Animated particle set with texture that simulates lava """
-    def __init__(self, shader,x,y,z, **params):
+
+    def __init__(self, shader, x, y, z, texturepath, **params):
         GL.glPointSize(params['point_size'])
 
         # initialize particle positions and texture coordinates
         self.coords = [(x, y, z) for i in range(params['num_particles'])]
         self.tex_coords = [(0, 0) for i in range(params['num_particles'])]
+        self.normals = [(0, 1, 0) for i in range(params['num_particles'])]
 
-        # create vertex array object with position and texture attributes
-        attributes = dict(position=self.coords, tex_coord=self.tex_coords)
-        mesh = Mesh(shader, attributes=attributes, usage=GL.GL_STREAM_DRAW)
-        texture = Texture(params['texture_path'], GL.GL_REPEAT, *(GL.GL_NEAREST, GL.GL_NEAREST_MIPMAP_LINEAR))
-        super().__init__(mesh, diffuse_map=texture)
+        uniforms = dict(
+            k_d=np.array((0.8, 0.8, 0.8), dtype=np.float32),
+            k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
+            k_a=np.array((0.5, 0.5, 0.5), dtype=np.float32),
+            s=60,
+        )
 
         # initialize particle velocities
-        self.velocities = [(random.uniform(-0.01, 0.01), random.uniform(0.02, 0.04), 0) for i in range(params['num_particles'])]
-        
+        # self.velocities = [(random.uniform(-0.01, 0.01), random.uniform(0.02, 0.04), 0)
+        #                    for i in range(params['num_particles'])]
+
+        # put velocities to 0 for now
+        self.velocities = [(0, 0, 0) for i in range(params['num_particles'])]
+
         # initialize particle base heights
         self.base_heights = [coord[1] for coord in self.coords]
 
-
+        # create vertex array object with position and texture attributes
+        attributes = dict(position=self.coords,
+                          texcoord=self.tex_coords, normal=self.normals)
+        mesh = Mesh(shader, attributes=attributes,
+                    usage=GL.GL_STREAM_DRAW, **{**uniforms, **params})
+        texture = Texture(texturepath)
+        super().__init__(mesh, texture_sampler=texture)
 
     def draw(self, primitives=GL.GL_POINTS, attributes=None, **uniforms):
         # update particle positions based on time and speed
@@ -54,7 +67,7 @@ class PointAnimation(Textured):
             x, y, z = self.coords[i]
             vx, vy, vz = self.velocities[i]
             # apply gravity to y-velocity
-            vy -= 0.0005
+            vy -= 0.
             # update particle position
             x += vx
             y += vy
@@ -67,18 +80,18 @@ class PointAnimation(Textured):
                 vy = random.uniform(0.02, 0.04)
                 angle = random.uniform(-np.pi/4, np.pi/4)
                 vx = vy * np.tan(angle)
-                
+
                 # reset base height for new particle position
                 self.base_heights[i] = y
-            
+
             # update particle position and velocity
             self.coords[i] = (x, y, z)
             self.velocities[i] = (vx, vy, vz)
-            
+
             # decide whether to draw particle based on position of previous particle
             if i > 0 and y < self.base_heights[i-1]:
                 continue    # skip this particle
-            
+
             # update texture coordinates based on particle positions
             u = (x + 1) / 2  # map x coordinate from [-1, 1] to [0, 1]
             v = (y + 1) / 2  # map y coordinate from [-1, 1] to [0, 1]
@@ -87,6 +100,7 @@ class PointAnimation(Textured):
         # update position and texture coordinate buffers on CPU
         coords = np.array(self.coords, 'f')
         tex_coords = np.array(self.tex_coords, 'f')
-        super().draw(primitives, attributes=dict(position=coords), **uniforms)
+        normals = np.array(self.normals, 'f')  # add normals
 
-
+        super().draw(primitives=primitives, attributes=dict(
+            position=coords, texcoord=tex_coords, normal=normals), **uniforms)
