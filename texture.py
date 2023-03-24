@@ -95,3 +95,22 @@ class TexturedPlane(Textured):
         # setup & upload texture to GPU, bind it to shader name 'diffuse_map'
         texture = Texture(tex_file, self.wrap, *self.filter)
         super().__init__(mesh, diffuse_map=texture)
+
+
+class TexturedMesh(Mesh):
+    def __init__(self, shader, attributes, index=None, usage=GL.GL_STATIC_DRAW, **uniforms):
+        super().__init__(shader, attributes, index=index, usage=usage, **uniforms)
+        self.textures = {}
+
+    def set_textures(self, **textures):
+        for name, texture in textures.items():
+            self.textures[name] = texture
+
+    def draw(self, primitives=GL.GL_TRIANGLES, attributes=None, **uniforms):
+        GL.glUseProgram(self.shader.glid)
+        self.shader.set_uniforms({**self.uniforms, **uniforms})
+        self.vertex_array.execute(primitives, attributes)
+        for index, (name, texture) in enumerate(self.textures.items()):
+            GL.glActiveTexture(GL.GL_TEXTURE0 + index)
+            GL.glBindTexture(texture.type, texture.glid)
+            uniforms[name] = index
