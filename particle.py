@@ -26,11 +26,11 @@ from texture import *  # import Pillow for image loading
 
 class PointAnimation(Textured):
     """ Animated particle set with texture that simulates lava """
-    def __init__(self, shader, **params):
+    def __init__(self, shader,x,y,z, **params):
         GL.glPointSize(params['point_size'])
 
         # initialize particle positions and texture coordinates
-        self.coords = [(random.uniform(-1, 1), random.uniform(-1, 1), 0.5) for i in range(params['num_particles'])]
+        self.coords = [(x, y, z) for i in range(params['num_particles'])]
         self.tex_coords = [(0, 0) for i in range(params['num_particles'])]
 
         # create vertex array object with position and texture attributes
@@ -45,9 +45,11 @@ class PointAnimation(Textured):
         # initialize particle base heights
         self.base_heights = [coord[1] for coord in self.coords]
 
+
+
     def draw(self, primitives=GL.GL_POINTS, attributes=None, **uniforms):
         # update particle positions based on time and speed
-        num_particles_to_draw = min(len(self.coords), 10)
+        num_particles_to_draw = min(len(self.coords), 100)
         for i in range(num_particles_to_draw):
             x, y, z = self.coords[i]
             vx, vy, vz = self.velocities[i]
@@ -58,10 +60,10 @@ class PointAnimation(Textured):
             y += vy
             z += vz
             # wrap particles around the screen if they go out of bounds
-            if abs(x) > 1 or abs(y) > 1 or z < 0:
-                x = random.uniform(-1, 1)
-                y = random.uniform(-1, 1)
-                z = 0.5
+            if y < -2.:
+                x = 0.
+                y = 0.
+                z = 0.
                 vy = random.uniform(0.02, 0.04)
                 angle = random.uniform(-np.pi/4, np.pi/4)
                 vx = vy * np.tan(angle)
