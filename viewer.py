@@ -7,6 +7,7 @@ import sys                          # for system arguments
 import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import numpy as np                  # all matrix manipulations & OpenGL args
 from core import *
+from terrain import *
 
 # -------------- main program and scene setup --------------------------------
 
@@ -19,8 +20,16 @@ def main():
     shader = Shader('./shaders/phong.vert', './shaders/phong.frag')
     skyboxShader = Shader('./shaders/skybox.vert', './shaders/skybox.frag')
 
-    viewer.add(heightMapTerrain(
-        shader, './ress/heightmap.png', light_dir=(1, 0, 0)))
+    shaderTree = Shader('./shaders/tree.vert', './shaders/tree.frag')
+
+    forest = forestGenerator(shaderTree, 15)
+    for i in range(len(forest)):
+        viewer.add(forest[i])
+
+    terrain = heightMapTerrain(
+        shaderTree, './ress/hm2.png', light_dir=(1, 0, 0), height_factor=0.3, red_tint_factor=0.)
+    viewer.add(terrain)
+
     viewer.add(SkyBoxTexture(skyboxShader, np.array(['./ress/skybox/xpos.png', './ress/skybox/xneg.png',
                './ress/skybox/ypos.png', './ress/skybox/yneg.png', './ress/skybox/zpos.png', './ress/skybox/zneg.png'])))
 

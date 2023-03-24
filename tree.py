@@ -5,6 +5,7 @@ from core import *
 from texture import *
 from skybox import *
 from tree import *
+from transform import *
 
 
 class Cone(Mesh):
@@ -56,7 +57,7 @@ class Cone(Mesh):
             s=60,
         )
 
-        normals = calculate_normals(position, index)
+        normals = calculate_normals2(position, index)
 
         super().__init__(shader, attributes=dict(position=position,
                                                  normal=normals,
@@ -111,7 +112,7 @@ class Icosahedron(Mesh):
         ]
 
         index = np.array(indices, np.uint32)
-        normals = calculate_normals(position, index)
+        normals = calculate_normals2(position, index)
 
         uniforms = dict(
             k_d=np.array((0.8, 0.8, 0.8), dtype=np.float32),
@@ -142,7 +143,7 @@ def treeGenerator(shader, pos, **params):
         secondBranch, texture_sampler=wood_texture)
     thirdBranch_textured = Textured(thirdBranch, texture_sampler=wood_texture)
 
-    phi = 60.0
+    phi = np.random.uniform(20., 90.)
     random_size = np.random.uniform(1.5, 3)
 
     mainLeaf = Icosahedron(shader)
@@ -176,12 +177,10 @@ def treeGenerator(shader, pos, **params):
     transform_secondBranch.add(secondBranch_textured, transform_leaf2)
 
     transform_thirdBranch = Node(transform=translate(
-        0, 6, 0)@rotate((0., 1., 0.), 90.0)@rotate((1., 0., 0.), phi-25.0))
+        0, 6, 0)@rotate((0., 1., 0.), 90.0)@rotate((1., 0., 0.), phi))
     transform_leaf3 = Node(transform=translate(0, 2.5, 0)@scale(0.5, 0.5, 0.5))
     transform_leaf3.add(leaf3_textured)
     transform_thirdBranch.add(thirdBranch_textured, transform_leaf3)
-
-    mainTrunk_textured = Textured(mainTrunk, texture=wood_texture)
 
     transform_mainTrunk = Node(transform=translate(pos, 0, 0))
     transform_mainTrunk.add(

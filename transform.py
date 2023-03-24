@@ -29,8 +29,6 @@ def lerp(point_a, point_b, fraction):
     return point_a + fraction * (point_b - point_a)
 
 
-
-
 # Typical 4x4 matrix utilities for OpenGL ------------------------------------
 def identity():
     """ 4x4 identity matrix """
@@ -154,7 +152,8 @@ def quaternion_matrix(q):
     qxy, qxz, qyz = q[1]*q[2], q[1]*q[3], q[2]*q[3]
     return np.array([[2*(nyy + nzz)+1, 2*(qxy - qwz),   2*(qxz + qwy),   0],
                      [2 * (qxy + qwz), 2 * (nxx + nzz) + 1, 2 * (qyz - qwx), 0],
-                     [2 * (qxz - qwy), 2 * (qyz + qwx), 2 * (nxx + nyy) + 1, 0],
+                     [2 * (qxz - qwy), 2 * (qyz + qwx),
+                      2 * (nxx + nyy) + 1, 0],
                      [0, 0, 0, 1]], 'f')
 
 
@@ -223,7 +222,7 @@ class Trackball:
         phi = 2 * math.acos(np.clip(np.dot(old, new), -1, 1))
         return quaternion_from_axis_angle(np.cross(old, new), radians=phi)
 
-    
+
 def normal(v1, v2, v3):
     u = v2 - v1
     v = v3 - v1
@@ -232,16 +231,42 @@ def normal(v1, v2, v3):
 
 
 def calculate_normals(width, height, vertices):
-    
-    normals = np.full((width*height, 3), fill_value=np.array([0.0,6.0,0.0]))
-    for z in range(1,height-1): 
-        for x in range(1,width-1):
+
+    normals = np.full((width*height, 3), fill_value=np.array([0.0, 6.0, 0.0]))
+    for z in range(1, height-1):
+        for x in range(1, width-1):
             Yu = vertices[x + (z+1)*width][1]
             Yul = vertices[x+1 + (z+1)*width][1]
             Yl = vertices[x+1 + z*width][1]
             Yd = vertices[x + (z-1)*width][1]
             Ydr = vertices[x-1 + (z-1)*width][1]
             Yr = vertices[x-1 + z*width][1]
-            normal = np.array([  (2*(Yr - Yl) - Yul + Ydr + Yu - Yd), 6, (2*(Yd - Yu) + Yul + Ydr - Yu - Yr)  ])
+            normal = np.array(
+                [(2*(Yr - Yl) - Yul + Ydr + Yu - Yd), 6, (2*(Yd - Yu) + Yul + Ydr - Yu - Yr)])
             normals[x+z*width] = normalized(normal)
+    return normals
+
+
+def calculate_normals2(vertices, indices):
+    # Create an array to store the normal vectors for each vertex
+    normals = np.zeros(vertices.shape, dtype=vertices.dtype)
+
+    # Calculate the normal vectors for each face and add them to the corresponding vertices
+    for i in range(0, indices.shape[0], 3):
+        v1 = vertices[indices[i]]
+        v2 = vertices[indices[i+1]]
+        v3 = vertices[indices[i+2]]
+
+        # Calculate the normal vector for this face using the cross product
+        normal = np.cross(v2 - v1, v3 - v1)
+
+        # Add the normal vector to the corresponding vertices
+        normals[indices[i]] += normal
+        normals[indices[i+1]] += normal
+        normals[indices[i+2]] += normal
+
+    # Normalize the normal vectors for each vertex
+    normals = np.divide(normals, np.linalg.norm(
+        normals, axis=1, keepdims=True))
+
     return normals
