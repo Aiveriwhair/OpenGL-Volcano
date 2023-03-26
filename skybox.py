@@ -22,8 +22,6 @@ class MappingTextureCube:
                                    GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
                 GL.glTexParameteri(GL.GL_TEXTURE_CUBE_MAP,
                                    GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
-                print(
-                    f'Loaded texture {tab_texture[i]} ({tex.width}x{tex.height}')
 
                 i += 1
         except Exception as e:

@@ -1,4 +1,5 @@
 # Python built-in modules
+import ctypes
 import math
 import os                           # os function, i.e. checking file status
 from itertools import cycle         # allows easy circular choice list
@@ -15,6 +16,10 @@ import assimpcy                     # 3D resource loader
 from transform import Trackball, identity
 from transform import translate, rotate, scale, vec, perspective, calculate_normals
 from PIL import Image
+
+# parralelisation
+import queue
+import threading
 
 # initialize and automatically terminate glfw on exit
 glfw.init()
@@ -153,6 +158,12 @@ class VertexArray:
     def __del__(self):  # object dies => kill GL array and buffers from GPU
         GL.glDeleteVertexArrays(1, [self.glid])
         GL.glDeleteBuffers(len(self.buffers), list(self.buffers.values()))
+
+    def get_attribute_data(self, key):
+        if key not in self.buffers:
+            raise KeyError(f"attribute '{key}' not found in VertexArray")
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.buffers[key])
+        return np.frombuffer(GL.glMapBuffer(GL.GL_ARRAY_BUFFER, GL.GL_READ_ONLY).value, dtype=np.float32)
 
 
 # ------------  Node is the core drawable for hierarchical scene graphs -------
@@ -466,11 +477,11 @@ class Axis(Mesh):
 class Pyramid(Mesh):
     def __init__(self, shader):
         position = np.array(((-.5, 0, -.5), (.5, 0, -.5),
-                            (.5, 0, .5), (-.5, 0, .5),  (0, 1, 0)), np.float32)
+                             (.5, 0, .5), (-.5, 0, .5),  (0, 1, 0)), np.float32)
         color = np.array(((1, 1, 1), (1, 1, 1), (1, 1, 1),
-                         (1, 1, 1), (0, 0, 0)), 'f')
+                          (1, 1, 1), (0, 0, 0)), 'f')
         index = np.array((1, 0, 4, 2, 1, 4, 3, 2, 4, 0, 3,
-                         4, 2, 3, 0, 2, 0, 1), np.uint32)
+                          4, 2, 3, 0, 2, 0, 1), np.uint32)
 
         self.color = (1, 0, 0)
         attributes = dict(position=position, color=color)
@@ -484,15 +495,15 @@ class Cube(Mesh):
     def __init__(self, shader, **params):
         self.shader = shader
         position = np.array((
-                            (-1, -1, -1),
-                            (1, -1, -1),
-                            (1, 1, -1),
-                            (-1, 1, -1),
-                            (-1, -1, 1),
-                            (1, -1, 1),
-                            (1, 1, 1),
-                            (-1, 1, 1)
-                            ), np.float32)
+            (-1, -1, -1),
+            (1, -1, -1),
+            (1, 1, -1),
+            (-1, 1, -1),
+            (-1, -1, 1),
+            (1, -1, 1),
+            (1, 1, 1),
+            (-1, 1, 1)
+        ), np.float32)
         index = np.array((
             3, 1, 0, 2, 1, 3,
             2, 5, 1, 6, 5, 2,
