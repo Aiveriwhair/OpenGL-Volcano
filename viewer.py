@@ -31,7 +31,7 @@ def main():
     #     viewer.add(forest[i])
 
     terrain = heightMapTerrain(
-        shaderTree, './ress/heightmap.png', light_dir=(1, 0, 0), height_factor=0.8, numbertrees=20, red_tint_factor=0.)
+        shaderTree, './ress/hm2.png', light_dir=(1, 0, 0), height_factor=0.6, numbertrees=20, red_tint_factor=0.)
     pos = terrain.pos_trees
     for i in range(len(pos)):
         viewer.add(forestGenerator(shaderTree, 1,

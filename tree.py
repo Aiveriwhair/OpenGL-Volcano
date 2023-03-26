@@ -122,6 +122,8 @@ class Cone2(Mesh):
             k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
             k_a=np.array((0.5, 0.5, 0.5), dtype=np.float32),
             s=60,
+            use_texture2=False,
+            use_texture3=False,
         )
 
         normals = calculate_normals2(position, index)
@@ -217,6 +219,8 @@ class Icosahedron(Mesh):
             k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
             k_a=np.array((0.5, 0.5, 0.5), dtype=np.float32),
             s=60,
+            use_texture2=0,
+            use_texture3=0,
         )
 
         super().__init__(shader, attributes=dict(position=position,
@@ -271,6 +275,8 @@ class Icosahedron2(Mesh):
             k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
             k_a=np.array((0.5, 0.5, 0.5), dtype=np.float32),
             s=60,
+            use_texture2=0,
+            use_texture3=0,
         )
 
         super().__init__(shader, attributes=dict(position=position,

@@ -211,12 +211,21 @@ class heightMapTerrain(Textured):
             k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
             k_a=np.array((0.5, 0.5, 0.5), dtype=np.float32),
             s=10,
+            height_threshold1=40.0,
+            height_threshold2=80.0,
+            use_texture2=1,
+            use_texture3=1,
+            mix_range=15,
+
         )
 
         mesh = Mesh(shader, attributes=attributes,
                     index=index, **{**uniforms, **params})
-        texture = Texture('./ress/grass.png')
-        super().__init__(mesh, texture_sampler=texture)
+        texture = Texture('./ress/bas.jpg')
+        texture1 = Texture('./ress/milieu.jpg')
+        texture2 = Texture('./ress/snow.jpg')
+        super().__init__(mesh, texture_sampler=texture,
+                         texture_sampler1=texture1, texture_sampler2=texture2)
 
     def generateTerrain(self):
         map = Image.open(self.heightmappath).convert('L')
