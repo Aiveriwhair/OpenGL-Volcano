@@ -17,6 +17,7 @@ from transform import translate, rotate, scale, vec, perspective, calculate_norm
 from PIL import Image
 from texture import Textured, Texture
 from core import Mesh, Shader, Viewer
+from tree import forestGenerator
 
 
 class Terrain(Mesh):
@@ -196,10 +197,11 @@ class circularTerrain(Mesh):
 
 
 class heightMapTerrain(Textured):
-    def __init__(self, shader, heightmappath, height_factor=1, **params):
+    def __init__(self, shader, heightmappath, height_factor=1, numbertrees=10, **params):
         self.shader = shader
         self.height_factor = height_factor
         self.heightmappath = heightmappath
+        self.numbertrees = numbertrees
 
         (attributes, index) = self.generateTerrain()
 
@@ -208,13 +210,22 @@ class heightMapTerrain(Textured):
             k_d=np.array((0.8, 0.8, 0.8), dtype=np.float32),
             k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
             k_a=np.array((0.5, 0.5, 0.5), dtype=np.float32),
-            s=10,
+            s=1,
+            height_threshold1=40.0,
+            height_threshold2=80.0,
+            use_texture2=1,
+            use_texture3=1,
+            mix_range=15,
+
         )
 
         mesh = Mesh(shader, attributes=attributes,
                     index=index, **{**uniforms, **params})
-        texture = Texture('./ress/lava.jpg')
-        super().__init__(mesh, texture_sampler=texture)
+        texture = Texture('./ress/bas.jpg')
+        texture1 = Texture('./ress/milieu.jpg')
+        texture2 = Texture('./ress/snow.jpg')
+        super().__init__(mesh, texture_sampler=texture,
+                         texture_sampler1=texture1, texture_sampler2=texture2)
 
     def generateTerrain(self):
         map = Image.open(self.heightmappath).convert('L')
@@ -234,16 +245,6 @@ class heightMapTerrain(Textured):
         i, j = np.indices((w, h), dtype=np.int32)
         texcoords[:, 0] = i.ravel() % 2
         texcoords[:, 1] = j.ravel() % 2
-
-        # texcoords = []
-        # i = 0
-        # j = 0
-        # for z in range(0, h):
-        #     for x in range(0, w):
-        #         texcoords.append((i, j))
-        #         j = (j + 1) % 2
-        #     i = (i + 1) % 2
-        # res = np.asarray(texcoords)
 
         # Fill in the vertex positions
         for y in range(h):
@@ -270,7 +271,29 @@ class heightMapTerrain(Textured):
                 indices[idx + 4] = i + w + 1
                 indices[idx + 3] = i + w
                 idx += 6
+        normals = calculate_normals(w, h, position)
+        self.pos_trees = self.generate_trees(
+            position, normals, self.numbertrees)
 
-        print(iters)
+        return (dict(position=position, normal=normals, color=color, texcoord=texcoords), indices)
 
-        return (dict(position=position, normal=calculate_normals(map.width, map.height, position), color=color, texcoord=texcoords), indices)
+    def generate_trees(self, positions, normals, tree_number, max_angle=30, min_height=10):
+        # Convertir l'angle maximal en radians
+        max_angle_rad = np.radians(max_angle)
+
+        # Calculer le cosinus de l'angle maximal
+        max_cos_angle = np.cos(max_angle_rad)
+
+        # Filtrer les positions et les normales en fonction de l'angle maximal autorisé
+
+        valid_positions = positions[(np.dot(normals, np.array(
+            [0, 1, 0])) >= max_cos_angle) & (positions[:, 1] >= min_height)]
+
+        # Choisir un nombre aléatoire de positions valides pour les arbres
+        if len(valid_positions) > tree_number:
+            tree_positions = valid_positions[np.random.choice(
+                len(valid_positions), tree_number, replace=False)]
+        else:
+            tree_positions = valid_positions
+
+        return tree_positions

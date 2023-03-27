@@ -49,6 +49,7 @@ class PointAnimation(Textured):
         # put velocities to 0 for now
         #self.velocities = [(0, 0, 0) for i in range(params['num_particles'])]
 
+
         # initialize particle base heights
         self.base_heights = [coord[1] for coord in self.coords]
 
@@ -71,6 +72,7 @@ class PointAnimation(Textured):
             vx, vy, vz = self.velocities[i]
             # apply gravity to y-velocity
             vy -= 0.005
+
             # update particle position
             x += vx
             y += vy
