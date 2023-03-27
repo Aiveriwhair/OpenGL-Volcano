@@ -210,7 +210,7 @@ class heightMapTerrain(Textured):
             k_d=np.array((0.8, 0.8, 0.8), dtype=np.float32),
             k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
             k_a=np.array((0.5, 0.5, 0.5), dtype=np.float32),
-            s=10,
+            s=1,
             height_threshold1=40.0,
             height_threshold2=80.0,
             use_texture2=1,

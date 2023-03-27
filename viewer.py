@@ -9,9 +9,6 @@ import numpy as np                  # all matrix manipulations & OpenGL args
 from core import *
 from terrain import *
 
-# parralelisation
-import queue
-import threading
 
 # -------------- main program and scene setup --------------------------------
 
