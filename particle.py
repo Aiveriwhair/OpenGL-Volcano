@@ -2,24 +2,11 @@
 #!/usr/bin/env python3
 import random
 import OpenGL.GL as GL
-import glfw
 import numpy as np
 from core import Shader, Viewer, Mesh, Texture
 from math import cos, pi, sin
-from PIL import Image
+import copy
 
-from texture import *  # import Pillow for image loading
-
-
-# -------------- Simple demo of a point animation -----------------------------
-#!/usr/bin/env python3
-import random
-import OpenGL.GL as GL
-import glfw
-import numpy as np
-from core import Shader, Viewer, Mesh, Texture
-from math import cos, pi, sin
-from PIL import Image
 
 from texture import *  # import Pillow for image loading
 
@@ -32,6 +19,9 @@ class PointAnimation(Textured):
 
         # initialize particle positions and texture coordinates
         self.coords = [(x, y, z) for i in range(params['num_particles'])]
+        self.number_of_particles = params['num_particles']
+        self.initial_coords = copy.copy(self.coords)
+
         self.tex_coords = [(0, 0) for i in range(params['num_particles'])]
         self.normals = [(0, 1, 0) for i in range(params['num_particles'])]
         self.point_size = params['point_size']
@@ -63,6 +53,7 @@ class PointAnimation(Textured):
         view_matrix = uniforms['view']
         camera_position = np.linalg.inv(view_matrix)[:, 3]
         num_particles_to_draw = min(len(self.coords), 100)
+
         for i in range(num_particles_to_draw):
             x, y, z = self.coords[i]
             vx, vy, vz = self.velocities[i]
@@ -74,20 +65,23 @@ class PointAnimation(Textured):
             y += vy
             z += vz
             # wrap particles around the screen if they go out of bounds
-            if y < -2.:
-                x = 0.
-                y = 0.
-                z = 0.
+            if y < self.initial_coords[i][1]-8:
+                x, y, z = self.initial_coords[i]
                 vy = random.uniform(0.02, 0.04)
                 angle = random.uniform(-np.pi/4, np.pi/4)
                 vx = vy * np.tan(angle)
 
+                # Mettre à jour les coordonnées et les vitesses dans les listes
+                self.coords[i] = (x, y, z)
+                self.velocities[i] = (vx, vy, vz)
+
                 # reset base height for new particle position
                 self.base_heights[i] = y
 
-            # update particle position and velocity
-            self.coords[i] = (x, y, z)
-            self.velocities[i] = (vx, vy, vz)
+            else:
+                # update particle position and velocity
+                self.coords[i] = (x, y, z)
+                self.velocities[i] = (vx, vy, vz)
 
             # decide whether to draw particle based on position of previous particle
             if i > 0 and y < self.base_heights[i-1]:
