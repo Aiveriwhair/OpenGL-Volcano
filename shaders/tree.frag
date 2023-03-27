@@ -22,6 +22,7 @@ uniform vec3 w_camera_position;
 
 uniform vec3 fog_color;
 uniform float fog_density;
+uniform float red_tint_factor;
 
 out vec4 out_color;
 
@@ -33,7 +34,8 @@ vec3 calculate_lighting(vec3 normal, vec3 view_direction) {
     float diffuse = max(dot(n, l), 0.0);
     float specular = pow(max(dot(r, v), 0.0), s);
 
-    vec3 color = k_a + k_d * diffuse + k_s * specular;
+    vec3 red_tint = vec3(1.0, 0.0, 0.0);
+    vec3 color = mix(k_a + k_d * diffuse + k_s * specular, red_tint, red_tint_factor);
     return color;
 }
 
@@ -53,6 +55,7 @@ void main() {
     if (use_texture3 == 1) {
         mixed_tex_color = mix(mixed_tex_color, tex_color3, mix_rock_snow);
     }
+    mixed_tex_color = mix(mixed_tex_color, tex_color3, mix_rock_snow);
 
     vec3 view_direction = w_camera_position - w_position;
     vec3 lighting = calculate_lighting(w_normal, view_direction);
