@@ -34,7 +34,7 @@ def main():
     viewer.add(SkyBoxTexture(skyboxShader, np.array(['./ress/skybox/xpos.png', './ress/skybox/xneg.png',
                './ress/skybox/ypos.png', './ress/skybox/yneg.png', './ress/skybox/zpos.png', './ress/skybox/zneg.png'])))
     viewer.add(PointAnimation(shaderTree, 0, 0, 0, './ress/grass.png', num_particles=1,
-               point_size=200.0, light_dir=(1, 0, 0)))
+               point_size=10.0, light_dir=(1, 0, 0)))
 
     # start rendering loop
     viewer.run()
