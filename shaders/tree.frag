@@ -1,22 +1,26 @@
 #version 330 core
 
-// receiving interpolated color and texture coordinate for fragment shader
 in vec2 fragment_texcoord;
 in vec3 w_position;
 in vec3 w_normal;
 
-// texture uniform variable
 uniform sampler2D texture_sampler;
+uniform sampler2D texture_sampler1;
+uniform sampler2D texture_sampler2;
+uniform float height_threshold1;
+uniform float height_threshold2;
+uniform int use_texture2;
+uniform int use_texture3;
+uniform float mix_range;
+
+
 uniform vec3 light_dir;
 
-// material properties
 uniform vec3 k_d, k_a, k_s;
 uniform float s;
 
-// world camera position
 uniform vec3 w_camera_position;
 
-// fog parameters
 uniform vec3 fog_color;
 uniform float fog_density;
 uniform float red_tint_factor;
@@ -35,7 +39,6 @@ vec3 calculate_lighting(vec3 normal, vec3 view_direction) {
     // Compute specular lighting
     float specular = pow(max(dot(r, v), 0.0), s);
 
-
     // Combine all lighting components and return final color
     vec3 red_tint = vec3(1.0, 0.0, 0.0);
     vec3 color = mix(k_a + k_d * diffuse + k_s * specular, red_tint, red_tint_factor);
@@ -43,19 +46,30 @@ vec3 calculate_lighting(vec3 normal, vec3 view_direction) {
 }
 
 void main() {
-    // Sample texture using texture coordinates
-    vec4 tex_color = texture(texture_sampler, fragment_texcoord);
-    // Compute lighting
+    vec4 tex_color1 = texture(texture_sampler, fragment_texcoord);
+    vec4 tex_color2 = texture(texture_sampler1, fragment_texcoord);
+    vec4 tex_color3 = texture(texture_sampler2, fragment_texcoord);
+
+    float height = w_position.y;
+    float mix_grass_rock = smoothstep(height_threshold1-mix_range, height_threshold1 + mix_range, height);
+    float mix_rock_snow = smoothstep(height_threshold2-mix_range, height_threshold2 +mix_range, height);
+
+    vec4 mixed_tex_color = tex_color1;
+    if (use_texture2==1) {
+        mixed_tex_color = mix(mixed_tex_color, tex_color2, mix_grass_rock);
+    }
+    if (use_texture3==1) {
+        mixed_tex_color = mix(mixed_tex_color, tex_color3, mix_rock_snow);
+    }
+    mixed_tex_color = mix(mixed_tex_color, tex_color3, mix_rock_snow);
+
     vec3 view_direction = w_camera_position - w_position;
     vec3 lighting = calculate_lighting(w_normal, view_direction);
 
-    // Compute fog factor
     float dist = length(view_direction);
     float fog_factor = exp(-fog_density * dist);
 
-    // Blend fog color with fragment color
-    vec3 blended_color = mix(fog_color, tex_color.rgb * lighting, fog_factor);
+    vec3 blended_color = mix(fog_color, mixed_tex_color.rgb * lighting, fog_factor);
 
-    // Output the final color
-    out_color = vec4(blended_color, tex_color.a);
+    out_color = vec4(blended_color, mixed_tex_color.a);
 }
