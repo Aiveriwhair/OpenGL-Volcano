@@ -61,9 +61,10 @@ void main() {
     vec3 lighting = calculate_lighting(w_normal, view_direction);
 
 
-    float fog_density = 0.0001;
+    float fog_density = 0.000001;
     float dist = length(view_direction);
     float fog_factor = exp(-fog_density * dist);
+    vec3 fog_color = vec3(255, 255, 255);
 
     vec3 blended_color = mix(fog_color, mixed_tex_color.rgb * lighting, fog_factor);
 
