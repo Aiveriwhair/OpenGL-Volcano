@@ -9,6 +9,7 @@ import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import numpy as np                  # all matrix manipulations & OpenGL args
 from core import *
 from terrain import *
+from billboard import *
 
 
 # -------------- main program and scene setup --------------------------------
@@ -37,9 +38,10 @@ def main():
     viewer.add(terrain)
     viewer.add(SkyBoxTexture(skyboxShader, np.array(['./ress/skybox/xpos.png', './ress/skybox/xneg.png',
                './ress/skybox/ypos.png', './ress/skybox/yneg.png', './ress/skybox/zpos.png', './ress/skybox/zneg.png'])))
-    #for i in range(len(pos)):
-        #viewer.add(PointAnimation(shaderTree,  pos[i][0], pos[i][1]+8, pos[i][2], './ress/grass.png', num_particles=15,
-                                 # point_size=10.0, light_dir=(1, 0, 0)))
+    for i in range(len(pos)):
+        viewer.add(BillboardAnimation(shaderTree,  pos[i][0], pos[i][1]+8, pos[i][2], './ress/leaf.png', num_particles=15,
+                                  point_size=1.0, light_dir=(1, 0, 0)))
+
 
     # start rendering loop
     viewer.run()
