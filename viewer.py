@@ -8,6 +8,7 @@ import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import numpy as np                  # all matrix manipulations & OpenGL args
 from core import *
 from water import FftWater
+from waterTerrain import WaterTerrain
 
 # -------------- main program and scene setup --------------------------------
 
