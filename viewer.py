@@ -29,7 +29,7 @@ def main():
     #     viewer.add(forest[i])
 
     terrain = heightMapTerrain(
-        shaderTree, './ress/hm2.png', light_dir=(1, 0, 0), height_factor=0.6, numbertrees=40, red_tint_factor=0.)
+        shaderTree, './ress/hm2.png', light_dir=(1, 0, 0), height_factor=0.6, numbertrees=30, red_tint_factor=0.)
     pos = terrain.pos_trees
     for i in range(len(pos)):
         viewer.add(forestGenerator(shaderTree, 1,
@@ -40,6 +40,8 @@ def main():
     for i in range(len(pos)):
         viewer.add(PointAnimation(shaderTree,  pos[i][0], pos[i][1]+8, pos[i][2], './ress/grass.png', num_particles=15,
                                   point_size=10.0, light_dir=(1, 0, 0)))
+    viewer.add(*load('./ress/dragon.obj', shaderTree,
+               light_dir=(1, 0, 0), K_d=(.6, .7, .8), s=100))
 
     # start rendering loop
     viewer.run()
