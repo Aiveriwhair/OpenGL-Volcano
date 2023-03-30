@@ -16,35 +16,6 @@ from billboard import *
 
 
 def main():
-    """ create a window, add scene objects, then run rendering loop """
-    viewer = Viewer()
-
-    # load shaders
-    shader = Shader('./shaders/phong.vert', './shaders/phong.frag')
-    skyboxShader = Shader('./shaders/skybox.vert', './shaders/skybox.frag')
-
-    shaderTree = Shader('./shaders/tree.vert', './shaders/tree.frag')
-
-    # forest = forestGenerator(shaderTree, 100, 0, 0, 0, light_dir=(1, 0, 0))
-    # for i in range(len(forest)):
-    #     viewer.add(forest[i])
-
-    terrain = heightMapTerrain(
-        shaderTree, './ress/hm2.png', light_dir=(1, 0, 0), height_factor=0.6, numbertrees=10, red_tint_factor=0.)
-    pos = terrain.pos_trees
-    for i in range(len(pos)):
-        viewer.add(forestGenerator(shaderTree, 1,
-                   pos[i][0], pos[i][1], pos[i][2], light_dir=(1, 0, 0))[0])
-    viewer.add(terrain)
-    viewer.add(SkyBoxTexture(skyboxShader, np.array(['./ress/skybox/xpos.png', './ress/skybox/xneg.png',
-               './ress/skybox/ypos.png', './ress/skybox/yneg.png', './ress/skybox/zpos.png', './ress/skybox/zneg.png'])))
-    for i in range(len(pos)):
-        viewer.add(BillboardAnimation(shaderTree,  pos[i][0], pos[i][1]+8, pos[i][2], './ress/leaf.png', num_particles=15,
-                                  point_size=1.0, light_dir=(1, 0, 0)))
-
-
-    # start rendering loop
-    viewer.run()
 
 
 if __name__ == '__main__':
