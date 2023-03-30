@@ -20,6 +20,8 @@ class BillboardAnimation(Textured):
             k_s=np.array((0.5673, 0.5673, 0.5673), dtype=np.float32),
             k_a=np.array((0.5, 0.5, 0.5), dtype=np.float32),
             s=60,
+            use_texture2=0,
+            use_texture3=0,
         )
 
         self.coords = [(x, y, z) for i in range(params['num_particles'])]
