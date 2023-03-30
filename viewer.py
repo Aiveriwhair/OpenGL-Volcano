@@ -9,6 +9,7 @@ import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import numpy as np                  # all matrix manipulations & OpenGL args
 from core import *
 from terrain import *
+from optimize_trees import *
 
 
 # -------------- main program and scene setup --------------------------------
@@ -29,18 +30,22 @@ def main():
     #     viewer.add(forest[i])
 
     terrain = heightMapTerrain(
-        shaderTree, './ress/hm2.png', light_dir=(1, 0, 0), height_factor=0.6, numbertrees=30, red_tint_factor=0.)
+        shaderTree, './ress/hm2.png', light_dir=(1, 0, 0), height_factor=0.6, numbertrees=1, red_tint_factor=0.)
     pos = terrain.pos_trees
-    for i in range(len(pos)):
-        viewer.add(forestGenerator(shaderTree, 1,
-                   pos[i][0], pos[i][1], pos[i][2], light_dir=(1, 0, 0))[0])
+
+    viewer.add(PineTrees(shaderTree, pos,
+               './ress/grass.png', './ress/grass.png'))
+
+    # for i in range(len(pos)):
+    #     viewer.add(forestGenerator(shaderTree, 1,
+    #                pos[i][0], pos[i][1], pos[i][2], light_dir=(1, 0, 0))[0])
     viewer.add(terrain)
     viewer.add(SkyBoxTexture(skyboxShader, np.array(['./ress/skybox/xpos.png', './ress/skybox/xneg.png',
                './ress/skybox/ypos.png', './ress/skybox/yneg.png', './ress/skybox/zpos.png', './ress/skybox/zneg.png'])))
-    for i in range(len(pos)):
-        viewer.add(PointAnimation(shaderTree,  pos[i][0], pos[i][1]+8, pos[i][2], './ress/grass.png', num_particles=15,
-                                  point_size=10.0, light_dir=(1, 0, 0)))
-    viewer.add(*load('./ress/dragon.obj', shaderTree,
+    # for i in range(len(pos)):
+    # viewer.add(PointAnimation(shaderTree,  pos[i][0], pos[i][1]+8, pos[i][2], './ress/grass.png', num_particles=15,
+    #                         point_size=10.0, light_dir=(1, 0, 0)))
+    viewer.add(*load('./drag1.obj', shaderTree,
                light_dir=(1, 0, 0), K_d=(.6, .7, .8), s=100))
 
     # start rendering loop

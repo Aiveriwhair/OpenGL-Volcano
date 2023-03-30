@@ -270,3 +270,32 @@ def calculate_normals2(vertices, indices):
         normals, axis=1, keepdims=True))
 
     return normals
+
+
+def calculate_normals3(vertices, indices):
+    normals = np.zeros_like(vertices)
+
+    for i in range(0, indices.shape[0], 3):
+        # Récupérer les indices des sommets du triangle
+        v1_index, v2_index, v3_index = indices[i], indices[i +
+                                                           1], indices[i + 2]
+
+        # Récupérer les sommets du triangle
+        v1, v2, v3 = vertices[v1_index], vertices[v2_index], vertices[v3_index]
+
+        # Calculer les vecteurs entre les sommets du triangle
+        edge1 = v2 - v1
+        edge2 = v3 - v1
+
+        # Calculer la normale du triangle en utilisant le produit vectoriel
+        triangle_normal = np.cross(edge1, edge2)
+
+        # Ajouter la normale du triangle aux normales des sommets
+        normals[v1_index] += triangle_normal
+        normals[v2_index] += triangle_normal
+        normals[v3_index] += triangle_normal
+
+    # Normaliser les normales des sommets
+    normals /= np.linalg.norm(normals, axis=1)[:, np.newaxis]
+
+    return normals
