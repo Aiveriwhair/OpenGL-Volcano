@@ -9,8 +9,8 @@ import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import numpy as np                  # all matrix manipulations & OpenGL args
 from core import *
 from terrain import *
-from optimize_trees import *
 from billboard import *
+from optimize_trees import *
 
 
 # -------------- main program and scene setup --------------------------------
