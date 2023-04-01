@@ -9,6 +9,7 @@ import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import numpy as np                  # all matrix manipulations & OpenGL args
 from core import *
 from terrain import *
+from water import WaterTerrain
 
 
 # -------------- main program and scene setup --------------------------------
@@ -18,28 +19,9 @@ def main():
     """ create a window, add scene objects, then run rendering loop """
     viewer = Viewer()
 
-    # load shaders
-    shader = Shader('./shaders/phong.vert', './shaders/phong.frag')
-    skyboxShader = Shader('./shaders/skybox.vert', './shaders/skybox.frag')
+    waterShader = Shader("shaders/water.vert", "shaders/water.frag")
 
-    shaderTree = Shader('./shaders/tree.vert', './shaders/tree.frag')
-
-    # forest = forestGenerator(shaderTree, 100, 0, 0, 0, light_dir=(1, 0, 0))
-    # for i in range(len(forest)):
-    #     viewer.add(forest[i])
-
-    terrain = heightMapTerrain(
-        shaderTree, './ress/hm2.png', light_dir=(1, 0, 0), height_factor=0.6, numbertrees=40, red_tint_factor=0.)
-    pos = terrain.pos_trees
-    for i in range(len(pos)):
-        viewer.add(forestGenerator(shaderTree, 1,
-                   pos[i][0], pos[i][1], pos[i][2], light_dir=(1, 0, 0))[0])
-    viewer.add(terrain)
-    viewer.add(SkyBoxTexture(skyboxShader, np.array(['./ress/skybox/xpos.png', './ress/skybox/xneg.png',
-               './ress/skybox/ypos.png', './ress/skybox/yneg.png', './ress/skybox/zpos.png', './ress/skybox/zneg.png'])))
-    for i in range(len(pos)):
-        viewer.add(PointAnimation(shaderTree,  pos[i][0], pos[i][1]+8, pos[i][2], './ress/grass.png', num_particles=15,
-                                  point_size=10.0, light_dir=(1, 0, 0)))
+    viewer.add(WaterTerrain(waterShader))
 
     # start rendering loop
     viewer.run()

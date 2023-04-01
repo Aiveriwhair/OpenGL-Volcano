@@ -9,7 +9,7 @@ import random                       # random number generator
 import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import glfw                         # lean window system wrapper for OpenGL
 import numpy as np                  # all matrix manipulations & OpenGL args
-import assimpcy                     # 3D resource loader
+# import assimpcy                     # 3D resource loader
 
 # our transform functions
 from transform import Trackball, identity
