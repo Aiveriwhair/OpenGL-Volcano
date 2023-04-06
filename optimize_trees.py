@@ -107,7 +107,7 @@ class Generate_Trunk(Textured):
 
 
 class Generate_Leaves(Textured):
-    def __init__(self, nb_trees, position, shader, leave_tex, heights=(8, 7, 6), widths=(4, 5, 7), subdivisions=15, **params):
+    def __init__(self, nb_trees, position, shader, leave_tex, heights=(8, 7, 6), widths=(4, 5, 7), subdivisions=40, **params):
         self.heights = heights
         self.widths = widths
         self.subdivisions = subdivisions

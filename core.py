@@ -17,9 +17,6 @@ from transform import Trackball, identity
 from transform import translate, rotate, scale, vec, perspective, calculate_normals
 from PIL import Image
 
-# parralelisation
-import queue
-import threading
 
 # initialize and automatically terminate glfw on exit
 glfw.init()
@@ -196,8 +193,10 @@ MAX_BONES = 128
 
 # optionally load texture module
 try:
-    from texture import Texture, Textured
+    from textureFix import Texture, Textured
+    print('texture module loaded')
 except ImportError:
+    print('texture module not found')
     Texture, Textured = None, None
 
 # optionally load animation module
@@ -224,6 +223,8 @@ def load(file, shader, tex_file=None, **params):
     # ----- Pre-load textures; embedded textures not supported at the moment
     path = os.path.dirname(file) if os.path.dirname(file) != '' else './'
     for mat in scene.mMaterials:
+        print('Loading material', mat)
+        print('tex_file', tex_file)
         if tex_file:
             tfile = tex_file
         elif 'TEXTURE_BASE' in mat.properties:  # texture token
@@ -237,9 +238,11 @@ def load(file, shader, tex_file=None, **params):
         else:
             tfile = None
         if Texture is not None and tfile:
+            print('Loading texture', tfile)
             mat.properties['diffuse_map'] = Texture(tex_file=tfile)
 
     # ----- load animations
+
     def conv(assimp_keys, ticks_per_second):
         """ Conversion from assimp key struct to our dict representation """
         return {key.mTime / ticks_per_second: key.mValue for key in assimp_keys}
@@ -320,6 +323,7 @@ def load(file, shader, tex_file=None, **params):
         new_mesh = Mesh(shader, attributes, index, **{**uniforms, **params})
 
         if Textured is not None and 'diffuse_map' in mat:
+            print('Loading texture', mat['diffuse_map'])
             new_mesh = Textured(new_mesh, diffuse_map=mat['diffuse_map'])
         if Skinned and mesh.HasBones:
             # make bone lookup array & offset matrix, indexed by bone index (id)
@@ -417,7 +421,7 @@ class Viewer(Node):
             if key == glfw.KEY_O:
                 self.trackball.pan((0, 0), (0, -1))
             # call Node.key_handler which calls key_handlers for all drawables
-            self.key_handler(key)   
+            self.key_handler(key)
 
     def on_mouse_move(self, win, xpos, ypos):
         """ Rotate on left-click & drag, pan on right-click & drag """

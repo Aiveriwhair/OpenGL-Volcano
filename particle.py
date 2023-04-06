@@ -3,7 +3,7 @@
 import random
 import OpenGL.GL as GL
 import numpy as np
-from core import Shader, Viewer, Mesh, Texture
+import core
 from math import cos, pi, sin
 import copy
 
@@ -42,8 +42,8 @@ class PointAnimation(Textured):
         # create vertex array object with position and texture attributes
         attributes = dict(position=self.coords,
                           texcoord=self.tex_coords, normal=self.normals)
-        mesh = Mesh(shader, attributes=attributes,
-                    usage=GL.GL_STREAM_DRAW, **{**uniforms, **params})
+        mesh = core.Mesh(shader, attributes=attributes,
+                         usage=GL.GL_STREAM_DRAW, **{**uniforms, **params})
         texture = Texture(texturepath)
         super().__init__(mesh, texture_sampler=texture)
 

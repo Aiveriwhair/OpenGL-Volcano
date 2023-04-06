@@ -62,9 +62,9 @@ void main() {
     float dist = distance(w_camera_position,w_position);
 
 
-    float fog_density = 0.000003;
+    float fog_density = 0.0000003;
     float fog_factor = exp(-fog_density * dist);
-    vec3 fog_color = vec3(128, 128, 128);
+    vec3 fog_color = vec3(190, 190, 190);
 
     vec3 blended_color = mix(fog_color, mixed_tex_color.rgb * lighting, fog_factor);
 

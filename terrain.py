@@ -54,7 +54,7 @@ class Terrain(Mesh):
         for y in range(h):
             for x in range(w):
                 i = y * w + x
-                position[i, 0] = x * step 
+                position[i, 0] = x * step
                 position[i, 1] = 0
                 position[i, 2] = y * step
 
@@ -221,7 +221,7 @@ class heightMapTerrain(Textured):
 
         mesh = Mesh(shader, attributes=attributes,
                     index=index, **{**uniforms, **params})
-        texture = Texture('./ress/grass.png')
+        texture = Texture('./ress/bas.jpg')
         texture1 = Texture('./ress/milieu.jpg')
         texture2 = Texture('./ress/snow.jpg')
         super().__init__(mesh, texture_sampler=texture,
