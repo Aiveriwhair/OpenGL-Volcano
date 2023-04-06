@@ -14,6 +14,7 @@ from optimize_trees import *
 from smaug import *
 from plate import *
 from eruption import *
+from generatefluid import *
 
 # -------------- main program and scene setup --------------------------------
 
@@ -27,10 +28,10 @@ def main():
     skyboxShader = Shader('./shaders/skybox.vert', './shaders/skybox.frag')
     shaderTree = Shader('./shaders/tree.vert', './shaders/tree.frag')
     objShader = Shader('./shaders/obj.vert', './shaders/obj.frag')
-    text = Shader('./shaders/texture.vert', './shaders/texture.frag')
+    fluidShader = Shader('./shaders/fluid.vert', './shaders/fluid.frag')
 
     terrain = heightMapTerrain(
-        shaderTree, './ress/j2.png', light_dir=(1, 0, 0), height_factor=0.6, numbertrees=200, red_tint_factor=0.)
+        shaderTree, './ress/j2.png', light_dir=(1, 0, 0), height_factor=0.6, numbertrees=200, red_tint_factor=0.3)
     pos_trees = terrain.pos_trees
     # cut the first 15 pos_trees to have two different pos_trees arrays
     pos_trees2_pine = pos_trees[15:]
@@ -49,8 +50,9 @@ def main():
     #     viewer.add(BillboardAnimation(shaderTree,  pos_trees_oak[i][0], pos_trees_oak[i][1]+8, pos_trees_oak[i][2], './ress/grass.png', num_particles=15,
     #                                   point_size=1.0, light_dir=(1, 0, 0)))
     viewer.add(Smaug(objShader))
-    # viewer.add(Plate(objShader))
+    viewer.add(Plate(objShader))
     viewer.add(Eruption(objShader))
+    viewer.add(positionFluid(fluidShader))
 
     # start rendering loop
     viewer.run()
@@ -58,5 +60,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
