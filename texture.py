@@ -2,7 +2,7 @@ import OpenGL.GL as GL              # standard Python OpenGL wrapper
 from PIL import Image               # load texture maps
 import glfw
 from itertools import cycle
-from core import Mesh
+from core import Shader, Viewer, Mesh
 import numpy as np                  # all matrix manipulations & OpenGL args
 
 # -------------- OpenGL Texture Wrapper ---------------------------------------
