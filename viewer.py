@@ -1,4 +1,4 @@
-from particle import PointAnimation
+#from particle import PointAnimation
 from tree import *
 from skybox import *
 from texture import *
@@ -9,8 +9,8 @@ import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import numpy as np                  # all matrix manipulations & OpenGL args
 from core import *
 from terrain import *
-from billboard import *
 from optimize_trees import *
+from billboard import *
 
 
 # -------------- main program and scene setup --------------------------------
@@ -49,12 +49,16 @@ def main():
     for i in range(len(pos_trees_oak)):
         viewer.add(BillboardAnimation(shaderTree,  pos_trees_oak[i][0], pos_trees_oak[i][1]+8, pos_trees_oak[i][2], './ress/grass.png', num_particles=15,
                                       point_size=1.0, light_dir=(1, 0, 0)))
-    # viewer.add(*load('./drag1.obj', shaderTree,
-    #            light_dir=(1, 0, 0), K_d=(.6, .7, .8), s=100))
+
+    viewer.add(PointAnimation(shaderTree, 0, 0, 0, num_particles=10,
+                              point_size=20.0, light_dir=(1, 0, 0)))
+
+    #viewer.add(*load('./drag1.obj', shaderTree,
+                #light_dir=(1, 0, 0), K_d=(.6, .7, .8), s=100))
+    
 
     # start rendering loop
     viewer.run()
-
 
 if __name__ == '__main__':
     main()
