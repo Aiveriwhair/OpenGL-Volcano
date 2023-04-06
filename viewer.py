@@ -53,7 +53,8 @@ def main():
     viewer.add(Plate(objShader))
     viewer.add(Eruption(objShader))
     viewer.add(positionFluid(fluidShader))
-
+    viewer.add(PointAnimation(shaderTree, 0, 0, 0, num_particles=10,
+                              point_size=20.0, light_dir=(1, 0, 0)))
     # start rendering loop
     viewer.run()
 

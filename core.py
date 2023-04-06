@@ -1,4 +1,5 @@
 # Python built-in modules
+import copy
 import ctypes
 import math
 import os                           # os function, i.e. checking file status
@@ -420,7 +421,6 @@ class Viewer(Node):
                 self.trackball.pan((0, 0), (-1, 0))
             if key == glfw.KEY_O:
                 self.trackball.pan((0, 0), (0, -1))
-            # call Node.key_handler which calls key_handlers for all drawables
             self.key_handler(key)
 
     def on_mouse_move(self, win, xpos, ypos):
@@ -554,3 +554,118 @@ class Cube(Mesh):
 
     def draw(self, primitives=GL.GL_TRIANGLES, **uniforms):
         super().draw(primitives=primitives, global_color=self.color, **uniforms)
+
+
+class PointAnimation(Mesh):
+    """ Animated particle set with texture that simulates lava """
+    is_accelerating = False
+    is_stopped = False
+
+    def __init__(self, shader, x, y, z, **params):
+        # GL.glPointSize(params['point_size'])
+
+        # initialize particle positions and texture coordinates
+        self.coords = [(x, y, z) for i in range(params['num_particles'])]
+        self.number_of_particles = params['num_particles']
+        self.initial_coords = copy.copy(self.coords)
+
+        self.point_size = params['point_size']
+
+        # initialize particle velocities
+        self.velocities = [(random.uniform(-0.01, 0.01), random.uniform(0.02, 0.04), 0)
+                           for i in range(params['num_particles'])]
+
+        # initialize particle base heights
+        self.base_heights = [coord[1] for coord in self.coords]
+
+        # create vertex array object with position and texture attributes
+
+        super().__init__(shader, attributes=dict(position=self.coords),
+                         usage=GL.GL_STREAM_DRAW, global_color=(0.5, 0.5, 0.8))
+
+    def draw(self, primitives=GL.GL_POINTS, attributes=None, **uniforms):
+
+        view_matrix = uniforms['view']
+        # Add default value for modelview
+        modelview = uniforms.get('modelview', np.identity(4))
+        num_particles_to_draw = min(len(self.coords), 100)
+        prev_camera_position = None  # variable pour stocker la position de la caméra
+
+        for i in range(num_particles_to_draw):
+            x, y, z = self.coords[i]
+            vx, vy, vz = self.velocities[i]
+            # apply gravity to y-velocity
+            vy -= 0.0005
+
+            # update particle position
+            x += vx
+            y += vy
+            z += vz
+            # wrap particles around the screen if they go out of bounds
+            if y < self.initial_coords[i][1]-8:
+                x, y, z = self.initial_coords[i]
+                vy = random.uniform(0.02, 0.04)
+                angle = random.uniform(-np.pi/4, np.pi/4)
+                vx = vy * np.tan(angle)
+
+                # Mettre à jour les coordonnées et les vitesses dans les listes
+                self.coords[i] = (x, y, z)
+                self.velocities[i] = (vx, vy, vz)
+
+                # reset base height for new particle position
+                self.base_heights[i] = y
+
+            else:
+                # update particle position and velocity
+                self.coords[i] = (x, y, z)
+                self.velocities[i] = (vx, vy, vz)
+
+            # decide whether to draw particle based on position of previous particle
+            if i > 0 and y < self.base_heights[i-1]:
+                continue    # skip this particle
+            # calculate the distance between the particle and the camera
+            camera_position = np.linalg.inv(
+                view_matrix[:3, :3]) @ (-view_matrix[:3, 3])
+            if not np.array_equal(prev_camera_position, camera_position):
+                prev_camera_position = camera_position
+                distance = np.linalg.norm(
+                    np.array(camera_position) - np.array([x, y, z]))
+            if distance is not None:
+             # Calculate the scaling factor for the particle size
+                max_distance = 100.0  # Example maximum distance at which particle is visible
+                scaling_factor = max(
+                    0, (max_distance - distance) / max_distance)
+            else:
+                scaling_factor = 1.0  # Use default value if distance is not defined
+            # calculate the final size of the particle
+            size = scaling_factor * self.point_size
+            min_size = 0.01  # example minimum size for the particle
+            size = max(size, min_size)
+
+            # update the OpenGL point size parameter
+            GL.glPointSize(size)
+            # update particle positions based on time and speed
+            if self.is_stopped:
+                # set velocities to zero if stopped
+                self.velocities = [(0, 0, 0)
+                                   for i in range(num_particles_to_draw)]
+            elif self.is_accelerating:
+                # accelerate particles if accelerating
+                for i in range(num_particles_to_draw):
+                    self.velocities[i] = (vx * 1.1, vy * 1.1, vz * 1.1)
+
+        PointAnimation.is_accelerating = False
+        PointAnimation.is_stopped = False
+
+        # update position and texture coordinate buffers on CPU
+        coords = np.array(self.coords, 'f')
+
+        super().draw(primitives=primitives, attributes=dict(
+            position=coords), **uniforms)
+
+    def accelerate(self):
+        """Accelerate particles"""
+        PointAnimation.is_accelerating = True
+
+    def stop(self):
+        PointAnimation.is_stopped = True
