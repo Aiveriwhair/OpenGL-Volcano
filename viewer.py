@@ -1,3 +1,4 @@
+from particulesGen import particuleGenerator
 from tree import *
 from skybox import *
 from texture import *
@@ -24,37 +25,37 @@ def main():
     viewer = Viewer()
 
     # load shaders
-    shader = Shader('./shaders/color.vert', './shaders/color.frag')
     skyboxShader = Shader('./shaders/skybox.vert', './shaders/skybox.frag')
-    shaderTree = Shader('./shaders/tree.vert', './shaders/tree.frag')
+    generalShader = Shader('./shaders/general.vert', './shaders/general.frag')
     objShader = Shader('./shaders/obj.vert', './shaders/obj.frag')
     fluidShader = Shader('./shaders/fluid.vert', './shaders/fluid.frag')
+    partShader = Shader('./shaders/part.vert', './shaders/part.frag')
 
     terrain = heightMapTerrain(
-        shaderTree, './ress/j2.png', light_dir=(1, 0, 0), height_factor=0.6, numbertrees=200, red_tint_factor=0.3)
+        generalShader, './ress/j2.png', light_dir=(-2, -1, -2), height_factor=0.6, numbertrees=2000, red_tint_factor=0.)
     pos_trees = terrain.pos_trees
+
     # cut the first 15 pos_trees to have two different pos_trees arrays
     pos_trees2_pine = pos_trees[15:]
     pos_trees_oak = pos_trees[:15]
 
-    viewer.add(PineTrees(shaderTree, pos_trees2_pine,
-               './ress/wood.png', './ress/pine.jpg', light_dir=(1, 0, 0)))
+    viewer.add(PineTrees(generalShader, pos_trees2_pine,
+               './ress/wood.png', './ress/pine.jpg', light_dir=(-2, -1, -2)))
 
-    # for i in range(len(pos_trees_oak)):
-    #     viewer.add(forestGenerator(shaderTree, 1,
-    #                                pos_trees_oak[i][0], pos_trees_oak[i][1], pos_trees_oak[i][2], light_dir=(1, 0, 0))[0])
+    for i in range(len(pos_trees_oak)):
+        viewer.add(forestGenerator(generalShader, 1,
+                                   pos_trees_oak[i][0], pos_trees_oak[i][1], pos_trees_oak[i][2], light_dir=(-2, -1, -2))[0])
     viewer.add(terrain)
     viewer.add(SkyBoxTexture(skyboxShader, np.array(['./ress/skybox/xpos.png', './ress/skybox/xneg.png',
                './ress/skybox/ypos.png', './ress/skybox/yneg.png', './ress/skybox/zpos.png', './ress/skybox/zneg.png'])))
-    # for i in range(len(pos_trees_oak)):
-    #     viewer.add(BillboardAnimation(shaderTree,  pos_trees_oak[i][0], pos_trees_oak[i][1]+8, pos_trees_oak[i][2], './ress/grass.png', num_particles=15,
-    #                                   point_size=1.0, light_dir=(1, 0, 0)))
+    for i in range(len(pos_trees_oak)):
+        viewer.add(BillboardAnimation(generalShader,  pos_trees_oak[i][0], pos_trees_oak[i][1]+8, pos_trees_oak[i][2], './ress/grass.png', num_particles=15,
+                                      point_size=0.5, light_dir=(-2, -1, -2)))
     viewer.add(Smaug(objShader))
     viewer.add(Plate(objShader))
     viewer.add(Eruption(objShader))
     viewer.add(positionFluid(fluidShader))
-    viewer.add(PointAnimation(shaderTree, 0, 0, 0, num_particles=10,
-                              point_size=20.0, light_dir=(1, 0, 0)))
+    viewer.add(particuleGenerator(partShader))
     # start rendering loop
     viewer.run()
 

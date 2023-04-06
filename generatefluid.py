@@ -14,7 +14,7 @@ class positionFluid(Node):
             k_d=(0., 0.3, 0.7),
             k_s=(1.0, 1.0, 1.0),
             s=30,
-            light_dir=(0, -1, -1),
+            light_dir=(-2, -1, -2),
             n_repeat_texture=2,
         )
         water = FluidTerrain(shader, dudv_path="ress/watermaps/dudv.png",
@@ -28,7 +28,7 @@ class positionFluid(Node):
             k_d=(1.0, 0.6, 0.0),
             k_s=(1.0, 0.8, 0.0),
             s=200,
-            light_dir=(0, -3, -6),
+            light_dir=(-2, -1, -2),
             n_repeat_texture=1,
         )
         lava = FluidTerrain(shader, dudv_path="ress/watermaps/dudv.png",

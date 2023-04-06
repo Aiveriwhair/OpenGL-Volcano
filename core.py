@@ -581,13 +581,11 @@ class PointAnimation(Mesh):
         # create vertex array object with position and texture attributes
 
         super().__init__(shader, attributes=dict(position=self.coords),
-                         usage=GL.GL_STREAM_DRAW, global_color=(0.5, 0.5, 0.8))
+                         usage=GL.GL_STREAM_DRAW, global_color=(0.5, 0.5, 0.8), use_texture2=0, use_texture3=0, red_tint_factor=1,)
 
     def draw(self, primitives=GL.GL_POINTS, attributes=None, **uniforms):
 
         view_matrix = uniforms['view']
-        # Add default value for modelview
-        modelview = uniforms.get('modelview', np.identity(4))
         num_particles_to_draw = min(len(self.coords), 100)
         prev_camera_position = None  # variable pour stocker la position de la caméra
 
@@ -604,7 +602,7 @@ class PointAnimation(Mesh):
             # wrap particles around the screen if they go out of bounds
             if y < self.initial_coords[i][1]-8:
                 x, y, z = self.initial_coords[i]
-                vy = random.uniform(0.02, 0.04)
+                vy = random.uniform(0.05, 0.3)
                 angle = random.uniform(-np.pi/4, np.pi/4)
                 vx = vy * np.tan(angle)
 
@@ -622,7 +620,7 @@ class PointAnimation(Mesh):
 
             # decide whether to draw particle based on position of previous particle
             if i > 0 and y < self.base_heights[i-1]:
-                continue    # skip this particle
+                continue
             # calculate the distance between the particle and the camera
             camera_position = np.linalg.inv(
                 view_matrix[:3, :3]) @ (-view_matrix[:3, 3])
@@ -631,15 +629,17 @@ class PointAnimation(Mesh):
                 distance = np.linalg.norm(
                     np.array(camera_position) - np.array([x, y, z]))
             if distance is not None:
+
              # Calculate the scaling factor for the particle size
-                max_distance = 100.0  # Example maximum distance at which particle is visible
+                max_distance = 300.0
                 scaling_factor = max(
                     0, (max_distance - distance) / max_distance)
             else:
-                scaling_factor = 1.0  # Use default value if distance is not defined
+                scaling_factor = 1.0
+
             # calculate the final size of the particle
             size = scaling_factor * self.point_size
-            min_size = 0.01  # example minimum size for the particle
+            min_size = 0.01
             size = max(size, min_size)
 
             # update the OpenGL point size parameter
@@ -652,7 +652,10 @@ class PointAnimation(Mesh):
             elif self.is_accelerating:
                 # accelerate particles if accelerating
                 for i in range(num_particles_to_draw):
-                    self.velocities[i] = (vx * 1.1, vy * 1.1, vz * 1.1)
+                    if (self.velocities[i][0] > 0.5 or self.velocities[i][1] > 0.5 or self.velocities[i][2] > 0.5):
+                        continue
+                    self.velocities[i] = (
+                        self.velocities[i][0] * 1.001, self.velocities[i][1] * 1.001, self.velocities[i][2] * 1.001)
 
         PointAnimation.is_accelerating = False
         PointAnimation.is_stopped = False

@@ -18,7 +18,6 @@ uniform vec3 k_s;
 uniform float s;
 uniform float time;
 
-
 uniform vec3 w_camera_position;
 
 out vec4 out_color;
@@ -51,9 +50,15 @@ void main()
     normal = normalize(normal);
 
     vec3 view_vector = normalize(w_camera_position - w_position);
+    float dist = distance(w_camera_position,w_position);
+
+    float fog_density = 0.0000003;
+    float fog_factor = exp(-fog_density * dist);
+    vec3 fog_color = vec3(190, 190, 190);
 
     //Phong illumination
-    vec3 I = k_ambient + calculate_lighting(normal, view_vector, k_shadow);
+    vec3 light = calculate_lighting(normal, view_vector, k_shadow);
+    vec3 I = k_ambient + mix(fog_color,light, fog_factor);
 
     out_color = vec4(I,1.0) * vec4(1.0, 1.0, 1.0, 1.0); 
 }

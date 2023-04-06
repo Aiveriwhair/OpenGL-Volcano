@@ -7,7 +7,8 @@ class Smaug(Node):
         super().__init__()
 
         # Charger le modèle
-        Smaug = load("./dragon/Smaug/smaug.obj", shader, light_dir=(1, 0, 0))
+        Smaug = load("./ress/dragon/Smaug/smaug.obj",
+                     shader, light_dir=(-2, -1, -2))
 
         transform_size = Node(transform=translate(
             205, 135, 205)@rotate((0., 1., 0.), 30.0))

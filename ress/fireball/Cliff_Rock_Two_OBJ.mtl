@@ -1,0 +1,33 @@
+newmtl Rock_01_ZBrush1SG
+    illum 4
+    Kd 0.00 0.00 0.00
+    Ka 0.50 0.50 0.50
+    Tf 1.00 1.00 1.00
+    Ni 1.00
+    Ks 0.00 0.00 0.00
+    Ns 0.00
+    map_Kd lava.png
+
+
+newmtl SK_Mannequin1SG
+illum 4
+Kd 0.22 0.22 0.22
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 0.20 0.20 0.20
+Ns 18.00
+newmtl SK_Mannequin1SG1
+illum 4
+Kd 0.22 0.22 0.22
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 0.20 0.20 0.20
+Ns 18.00
+newmtl initialShadingGroup
+illum 4
+Kd 0.50 0.50 0.50
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
