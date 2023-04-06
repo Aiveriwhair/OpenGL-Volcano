@@ -406,9 +406,18 @@ class Viewer(Node):
                 GL.glPolygonMode(GL.GL_FRONT_AND_BACK, next(self.fill_modes))
             if key == glfw.KEY_SPACE:
                 glfw.set_time(0.0)
-
+            if key == glfw.KEY_UP:
+                self.trackball.pan((0, 0), (0, -1))
+            if key == glfw.KEY_DOWN:
+                self.trackball.pan((0, 0), (0, 1))
+            if key == glfw.KEY_LEFT:
+                self.trackball.pan((0, 0), (1, 0))
+            if key == glfw.KEY_RIGHT:
+                self.trackball.pan((0, 0), (-1, 0))
+            if key == glfw.KEY_O:
+                self.trackball.pan((0, 0), (0, -1))
             # call Node.key_handler which calls key_handlers for all drawables
-            self.key_handler(key)
+            self.key_handler(key)   
 
     def on_mouse_move(self, win, xpos, ypos):
         """ Rotate on left-click & drag, pan on right-click & drag """

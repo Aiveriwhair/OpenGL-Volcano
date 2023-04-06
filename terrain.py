@@ -54,7 +54,7 @@ class Terrain(Mesh):
         for y in range(h):
             for x in range(w):
                 i = y * w + x
-                position[i, 0] = x * step
+                position[i, 0] = x * step 
                 position[i, 1] = 0
                 position[i, 2] = y * step
 
